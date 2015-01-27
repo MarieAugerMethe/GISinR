@@ -1,0 +1,11 @@
+# R Studio files
+.Rproj.user
+.Rhistory
+.RData
+*.Rproj
+
+# Sweave files
+*.log
+*.synctex.gz
+*concordance.tex
+Tutorial*.tex

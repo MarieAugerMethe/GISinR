@@ -1,0 +1,32 @@
+\documentclass{article}
+
+
+\begin{document}
+\author{Marie Auger-M\'eth\'e}
+
+\title{GIS in R: Tutorial 1}
+\date{}
+\maketitle
+
+\section{Good R practices}
+
+If you want to be able to reproduce your analyses, it is important to keep your track of your files and preferably do version control. Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis.
+
+\subsection{Keep all our files in one place with R Studio projects}
+
+This is particularly important for spatial analyses because spatial data files can be challenging to handle and keeping all files in the same folder facilitate the process. Keep originals somewhere else so only changes stuff.
+
+\subsection{Make reproducible examples with R scripts}
+
+Share complete analysis by sending an R script. Put comments!
+
+\subsection{Keep track of your changes with version control}
+
+\section{Our first GIS example}
+
+<<>>=
+1+1
+@
+
+
+\end{document}
