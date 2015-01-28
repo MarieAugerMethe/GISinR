@@ -70,7 +70,7 @@ plot(bioPr)
 
 Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the data.frame into a \texttt{SpatialPointsDataFrame}. The simplest way to do so is by assigning values to \texttt{coords} slot, which is the component that contains the coordinate values.
 
-<<>>=
+<<tidy=TRUE>>=
 # Load package
 library(sp)
 # Create new data.frame with the exact same value as bioPr
