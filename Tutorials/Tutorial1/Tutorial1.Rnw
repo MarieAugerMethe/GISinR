@@ -3,6 +3,10 @@
 \usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
 \usepackage{exercise}
 
+% Paragraph indentation and line skip
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{3mm plus2mm minus1mm}
+
 % For tilde
 \usepackage{xspace}
 \newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
@@ -30,7 +34,7 @@ knit_hooks$set(source = function(x, options) {
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Good R practices}
 
-If you want to be able to reproduce your analyses, it is important to keep your track of your files and preferably do version control. Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis.
+If you want to be able to reproduce your analyses, it is important to keep track of your files, write down all coding steps, and preferably do version control. Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis.
 
 \subsection{Keep all our files in one place with R Studio projects}
 
@@ -40,7 +44,7 @@ This is particularly important for spatial analyses because spatial data files c
 
 Share complete analysis by sending an R script. Put comments!
 
-For those that are taking the class for credit, I want you to send me by e-mail for each tutorial a \texttt{R} script that has all of the code from the tutorial, including the code found in the document.
+\textbf{\textit{For those that are taking the class for credit, I want you to send me by e-mail for each tutorial a \texttt{R} script that has all of the code from the tutorial, including the code found in the document.}}
 
 \subsection{Keep track of your changes with version control}
 
@@ -94,6 +98,31 @@ box()
 @
 
 Here instead of plotting the data values from all the columns the plot shows the location of the row in space.
+
+\section{Projection}
+
+While this is great, this plot is not particularly informative. In part, because we don't have any reference points that tells us where the locations are. In Canada? In New Zealand?
+
+To be able to put reference points we need to give to make sure the \texttt{proj4string} slot of the \texttt{Spatial} object is set to the correct projection. When we ran \texttt{summary(bioPrSP)} above, we could see both the Is projected is NA and the proj4string is NA, indicating that the data doesn't have a projection. This is not surprising since we have not specified the projection. We can confirm this with the \texttt{proj4string}.
+
+<<>>=
+proj4string(bioPrSP)
+is.projected(bioPrSP)
+@
+
+I'm assuming that the latitude and longitude data from OTN is the conventional GPS data using WGS84 datum. To set it, you can use again the 
+
+<<>>=
+proj4string(bioPrSP) <- CRS("+proj=longlat +datum=WGS84")
+# Now bioPrSP has as datum
+proj4string(bioPrSP)
+# But it's still not projected
+is.projected(bioPrSP)
+@
+
+That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla
+
+\section{Exercise}
 
 \begin{Exercise}
 
