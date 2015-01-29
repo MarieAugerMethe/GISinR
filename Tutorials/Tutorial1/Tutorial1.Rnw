@@ -68,7 +68,7 @@ summary(bioPr)
 
 One of the generic function is the \texttt{plot} functions.
 
-<<plot,fig.align="center",out.width="0.7\\linewidth">>=
+<<plot,fig.align="center",out.width="0.5\\linewidth">>=
 plot(bioPr)
 @
 
@@ -90,8 +90,10 @@ class(bioPrSP)
 summary(bioPrSP)
 @
 
+We see now the bounding box (\texttt{bbox}) with the min and max values of the coordinates. We know that the data is not projected and that the \texttt{proj4string} slot has a missing value, more on this below. We also see that we have 727 points, which correspond to the 727 rows of the original \texttt{data.frame}. Finally we see a summary of the attributes of the points, which is the same summary as the one for the orginal data frame, when you exclude the columns with the coordinates.
+
 But more interestingly, let's look at the \texttt{plot} function.
-<<>>=
+<<tidy=TRUE>>=
 plot(bioPrSP)
 # With an added box around the figure
 box()
@@ -121,6 +123,79 @@ is.projected(bioPrSP)
 @
 
 That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla
+
+
+Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
+
+<<tidy=TRUE>>=
+# We will put a non-sensical coordinate in the data frame
+bioPr$longitude[1] <- -300 # -300 degree longitude makese no sense
+head(bioPr)
+# Now let's try to create the spatial object again, using the same steps
+bioPrSP2 <- bioPr 
+coordinates(bioPrSP2) <- ~longitude+latitude
+proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
+@
+
+We get an error because the longitude value -300 doesn't exist in the coordinate system we chose. As a result the object remains without a coordinate system.
+
+<<>>=
+proj4string(bioPrSP2)
+@
+
+If you remove the row with the non-conformat data, you'll be able to assign the coordinate system.
+
+<<>>=
+# Get the index for the non-conformant coordinates
+ncLonLat <- which(coordinates(bioPrSP2) == -300, arr.ind=TRUE)
+# We know it should be in row 1, col 1, since we've put it there
+ncLonLat
+# Remove that row
+bioPrSP2 <- bioPrSP2[-ncLonLat[,1],]
+# Now assign the coordinate system
+proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
+@
+
+\section{Attributes: subsetting}
+What if we wanted to create a object that only include a subset of the location. In this example we would like to only have the Atlantic cod (\textit{Gadus morhua}) locations.
+
+<<tidy=TRUE>>=
+# Only take the points that have "Gadus morhua" in the column scientificname
+codPrSP <- bioPrSP[bioPrSP$scientificname == "Gadus morhua",]
+# We now have 0 Halichoerus grypus, but we can see that the subset will keep the coordinate system, but will update the bounding box
+summary(codPrSP)
+# For example compare
+bbox(bioPrSP)
+bbox(codPrSP)
+@
+
+The object class we have been using so far, \texttt{SpatialPointsDataFrame}, is actually a more complex level class for point data. I've presented first, because it's the class that I find the more useful because most of my data is poits with some kind of attributes. However, there may be cases where the data you have is only coordinates, with no further attributes associated with them. In this case you would use a \texttt{SpatialPoints} class. For example, let's say we only have the locations of the bioprobes, with no information on the species, sex, age, etc..
+
+<<tidy=TRUE>>=
+# We are making a bit of an artifical example here by first getting the coordinates of the bioPrSP
+bioPrCoord <- coordinates(bioPrSP)
+# Now let assume that this new object is the only information we have
+summary(bioPrCoord)
+# We can create a SpatialPoints object as follow
+bioPrCoordSP <- SpatialPoints(bioPrCoord, proj4string = CRS("+proj=longlat +ellps=WGS84"))
+# This now a SpatialPoints object, without any attribute
+summary(bioPrCoordSP)
+# That can be plotted just like before
+plot(bioPrCoordSP)
+box()
+@
+
+
+It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case you can pyt the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}... bla bla bla
+
+The great thing about attributes is that they can be used to create symbols in plots.
+
+<<>>=
+spplot(bioPrSP,zcol="scientificname")
+@
+
+
+But more on this on the next class!
 
 \section{Exercise}
 
