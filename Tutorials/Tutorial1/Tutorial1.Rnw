@@ -24,6 +24,9 @@ knit_hooks$set(source = function(x, options) {
   gsub('~', '\\\\mytilde', txt)
 })
 @
+<<setupOp, include=FALSE>>=
+opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE)
+@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \author{Marie Auger-M\'eth\'e}
@@ -68,13 +71,13 @@ summary(bioPr)
 
 One of the generic function is the \texttt{plot} functions.
 
-<<plot,fig.align="center",out.width="0.5\\linewidth">>=
+<<dataframeplot>>=
 plot(bioPr)
 @
 
 Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the data.frame into a \texttt{SpatialPointsDataFrame}. The simplest way to do so is by assigning values to \texttt{coords} slot, which is the component that contains the coordinate values.
 
-<<tidy=TRUE>>=
+<<>>=
 # Load package
 library(sp)
 # Create new data.frame with the exact same value as bioPr
@@ -93,7 +96,7 @@ summary(bioPrSP)
 We see now the bounding box (\texttt{bbox}) with the min and max values of the coordinates. We know that the data is not projected and that the \texttt{proj4string} slot has a missing value, more on this below. We also see that we have 727 points, which correspond to the 727 rows of the original \texttt{data.frame}. Finally we see a summary of the attributes of the points, which is the same summary as the one for the orginal data frame, when you exclude the columns with the coordinates.
 
 But more interestingly, let's look at the \texttt{plot} function.
-<<tidy=TRUE>>=
+<<>>=
 plot(bioPrSP)
 # With an added box around the figure
 box()
@@ -127,12 +130,14 @@ That's because lat lon is not a projection... bla bla bla, and we can set anothe
 
 Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
 
-<<tidy=TRUE>>=
+<<>>=
+# Create a duplicate data.frame
+bioPr2 <- bioPr
 # We will put a non-sensical coordinate in the data frame
-bioPr$longitude[1] <- -300 # -300 degree longitude makese no sense
-head(bioPr)
+bioPr2$longitude[1] <- -300 # -300 degree longitude makese no sense
+head(bioPr2)
 # Now let's try to create the spatial object again, using the same steps
-bioPrSP2 <- bioPr 
+bioPrSP2 <- bioPr2
 coordinates(bioPrSP2) <- ~longitude+latitude
 proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
 @
@@ -159,7 +164,7 @@ proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
 \section{Attributes: subsetting}
 What if we wanted to create a object that only include a subset of the location. In this example we would like to only have the Atlantic cod (\textit{Gadus morhua}) locations.
 
-<<tidy=TRUE>>=
+<<>>=
 # Only take the points that have "Gadus morhua" in the column scientificname
 codPrSP <- bioPrSP[bioPrSP$scientificname == "Gadus morhua",]
 # We now have 0 Halichoerus grypus, but we can see that the subset will keep the coordinate system, but will update the bounding box
@@ -171,7 +176,7 @@ bbox(codPrSP)
 
 The object class we have been using so far, \texttt{SpatialPointsDataFrame}, is actually a more complex level class for point data. I've presented first, because it's the class that I find the more useful because most of my data is poits with some kind of attributes. However, there may be cases where the data you have is only coordinates, with no further attributes associated with them. In this case you would use a \texttt{SpatialPoints} class. For example, let's say we only have the locations of the bioprobes, with no information on the species, sex, age, etc..
 
-<<tidy=TRUE>>=
+<<>>=
 # We are making a bit of an artifical example here by first getting the coordinates of the bioPrSP
 bioPrCoord <- coordinates(bioPrSP)
 # Now let assume that this new object is the only information we have
@@ -186,11 +191,44 @@ box()
 @
 
 
-It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case you can pyt the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}... bla bla bla
+It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case you can put the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}. The idea here is similar to matching rows of database based on their unique key. So here the unique key is the name of the row. So for example let's say we want to match the coordinates of the bioprobes found in the matrix \texttt{bioPrCoord} back to the data.frame \texttt{bioPr}.
+
+<<>>=
+# First indentify whether the objects have row name
+str(row.names(bioPrCoord))
+str(row.names(bioPr))
+# While bioPr has number values from 1-727, bioPrCoord doesn't.
+# We know that bioPrCoord should be in the same order as bioPr, becasue we've created bioPrCoord from bioPr. So I think we could use directly
+bioPrSP3 <- SpatialPointsDataFrame(bioPrCoord, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
+ # Note that match.ID=TRUE is the default value, so you don't need to specify it.
+# We can see that the rows are adequately associated with teh coordinates. Just comapre the longitude and latitude columns to the coordinates
+bioPrSP3[1:5,]
+# Now just for fun let's mix up the row on bioPrCoord, in this case if we want the row.names to be assign.
+row.names(bioPrCoord) <- 1:727
+# Then we can sample at random and the row name will be the same
+bioPrCoordM <- bioPrCoord[sample(1:727,727),] 
+# We see now that compare to the original the row are mixed randomly, be the original row name remains associated with it's original row
+head(bioPrCoordM)
+head(bioPrCoord)
+# Now we can create a spatial object that will use the row names, even if mixed randomly, to match the data.frame of attributes to the coordinates
+bioPrSP4 <- SpatialPointsDataFrame(bioPrCoordM, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
+# Now the order is mixed up but the coordinates still correspond to the good row of the attributes.
+bioPrSP4[1:5,]
+@
+
+Note that if the row names don't match up, you won't be ableto creat a SpatialPointsDataFrame
+
+<<>>=
+# Creating a duplicate of the coordinate matix
+bioPrCoordN <- bioPrCoord
+# Giving new names, which don't match with one of the 727 orginal names, to the first 5 rows
+row.names(bioPrCoordN)[1:5] <- 1001:1005
+bioPrSP5 <- SpatialPointsDataFrame(bioPrCoordN, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
+@
 
 The great thing about attributes is that they can be used to create symbols in plots.
 
-<<>>=
+<<spplot>>=
 spplot(bioPrSP,zcol="scientificname")
 @
 
