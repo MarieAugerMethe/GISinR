@@ -134,14 +134,15 @@ That's because lat lon is not a projection... bla bla bla, and we can set anothe
 library(rgdal)
 @
 
-<<addCanada>>=
+<<addWorld>>=
+# One way to get a sense of where we are is to plot the world on top
 library(maps)
-# Get a coarse map of Canada using the packages maps
-canada <- map("world", "canada", resolution=0, fill=TRUE)
 plot(bioPrSP)
-map(canada, add=TRUE)
+# This is a coarse map
+map("world", resolution=0, add=TRUE)
 box()
 @
+
 
 <<worldProj, fig.width=9, fig.height=4>>=
 library(maptools) # Need maptools for pruneMap and map2SpatialPolygons
@@ -164,7 +165,6 @@ plot(worldSPmoll)
 box()
 @
 
-
 Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
 {
 \raggedright
@@ -172,7 +172,7 @@ Error when you have locations that are outside coordinates system, this can happ
 # Create a duplicate data.frame
 bioPr2 <- bioPr
 # We will put a non-sensical coordinate in the data frame
-bioPr2$longitude[1] <- -300 # -300 degree longitude makese no sense
+bioPr2$longitude[1] <- -300 # -300 degree longitude makes no sense
 head(bioPr2)
 # Now let's try to create the spatial object again, using the same steps
 bioPrSP2 <- bioPr2
@@ -254,7 +254,8 @@ bioPrSP4[1:5,]
 @
 
 Note that if the row names don't match up, you won't be able to create a \texttt{SpatialPointsDataFrame}
-
+{
+\raggedright
 <<>>=
 # Creating a duplicate of the coordinate matix
 bioPrCoordN <- bioPrCoord
@@ -262,6 +263,7 @@ bioPrCoordN <- bioPrCoord
 row.names(bioPrCoordN)[1:5] <- 1001:1005
 bioPrSP5 <- SpatialPointsDataFrame(bioPrCoordN, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
 @
+}
 
 Note that they are other ways in which you can construct a \texttt{SpatialPointsDataFrame}, including by linking a \texttt{data.frame} to a \texttt{SpatialPoints} object.
 
