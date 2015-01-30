@@ -25,7 +25,8 @@ knit_hooks$set(source = function(x, options) {
 })
 @
 <<setupOp, include=FALSE>>=
-opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE)
+opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
+               tidy.opts=list(blank=FALSE, width.cutoff=52))
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,6 +116,8 @@ proj4string(bioPrSP)
 is.projected(bioPrSP)
 @
 
+Coordinate reference systems (CRS), which are used to represent the earth on a plane, are essential part of GIS and had been the focus of cartography.
+
 I'm assuming that the latitude and longitude data from OTN is the conventional GPS data using WGS84 datum. To set it, you can use again the 
 
 <<>>=
@@ -127,9 +130,44 @@ is.projected(bioPrSP)
 
 That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla
 
+<<introGDAL>>=
+library(rgdal)
+@
+
+<<addCanada>>=
+library(maps)
+# Get a coarse map of Canada using the packages maps
+canada <- map("world", "canada", resolution=0, fill=TRUE)
+plot(bioPrSP)
+map(canada, add=TRUE)
+box()
+@
+
+<<worldProj, fig.width=9, fig.height=4>>=
+library(maptools) # Need maptools for pruneMap and map2SpatialPolygons
+# This is not a an Spatial object from the package sp like bioPr
+# Instead it's a object class map
+# Remove the limit 
+worldMap <- map("world", resolution=0, fill=TRUE, plot=FALSE, xlim=c(-179,179), ylim=c(-89,89))
+worldMap <- pruneMap(worldMap, xlim=c(-179,179))
+# But you can transform it into a spatial object using
+IDs <- sapply(strsplit(worldMap$names, ":"), function(x) x[1])
+worldSP <- map2SpatialPolygons(worldMap, IDs=IDs, proj4string = CRS("+proj=longlat +ellps=WGS84"))
+
+# Now let's look at transformations
+layout(matrix(1:2, nrow=1))
+plot(worldSP)
+box()
+# Projecting to Mollweide projection
+worldSPmoll <- spTransform(worldSP, CRS("+proj=moll"))
+plot(worldSPmoll)
+box()
+@
+
 
 Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
-
+{
+\raggedright
 <<>>=
 # Create a duplicate data.frame
 bioPr2 <- bioPr
@@ -141,7 +179,7 @@ bioPrSP2 <- bioPr2
 coordinates(bioPrSP2) <- ~longitude+latitude
 proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
 @
-
+}
 We get an error because the longitude value -300 doesn't exist in the coordinate system we chose. As a result the object remains without a coordinate system.
 
 <<>>=
@@ -190,7 +228,6 @@ plot(bioPrCoordSP)
 box()
 @
 
-
 It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case you can put the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}. The idea here is similar to matching rows of database based on their unique key. So here the unique key is the name of the row. So for example let's say we want to match the coordinates of the bioprobes found in the matrix \texttt{bioPrCoord} back to the data.frame \texttt{bioPr}.
 
 <<>>=
@@ -216,7 +253,7 @@ bioPrSP4 <- SpatialPointsDataFrame(bioPrCoordM, bioPr, proj4string = CRS("+proj=
 bioPrSP4[1:5,]
 @
 
-Note that if the row names don't match up, you won't be ableto creat a SpatialPointsDataFrame
+Note that if the row names don't match up, you won't be able to create a \texttt{SpatialPointsDataFrame}
 
 <<>>=
 # Creating a duplicate of the coordinate matix
@@ -226,12 +263,31 @@ row.names(bioPrCoordN)[1:5] <- 1001:1005
 bioPrSP5 <- SpatialPointsDataFrame(bioPrCoordN, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
 @
 
-The great thing about attributes is that they can be used to create symbols in plots.
+Note that they are other ways in which you can construct a \texttt{SpatialPointsDataFrame}, including by linking a \texttt{data.frame} to a \texttt{SpatialPoints} object.
+
+<<SPpointsDataFrame>>=
+# Here we don't need to specify the coordinate system and projection, because the SpatialPoints object already has this information.
+bioPrSP6 <- SpatialPointsDataFrame(bioPrCoordSP, bioPr)
+# It should be the same has linking the matrix of coordinate
+identical(bioPrSP3, bioPrSP6)
+@
+
+A final way which is similar to the one presented in my orginial example, is using the \texttt{coordinates} function.
+
+<<>>=
+# Make a duplicate of the data.frame
+bioPrSP7 <- bioPr
+coordinates(bioPrSP7) <- bioPrCoord
+class(bioPrSP7)
+# To add the projection, you can just use proj4string
+proj4string(bioPrSP7) <- CRS("+proj=longlat +ellps=WGS84")
+@
+
+Ok, so I've presented multiple ways to associated attributes to locations and create a \texttt{SpatialPointsDataFrame}. But why should we bother? Well, one of the great thing about attributes is that they can be used to create symbols in plots.
 
 <<spplot>>=
 spplot(bioPrSP,zcol="scientificname")
 @
-
 
 But more on this on the next class!
 
