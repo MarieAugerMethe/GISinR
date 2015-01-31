@@ -42,7 +42,13 @@ If you want to be able to reproduce your analyses, it is important to keep track
 
 \subsection{Keep all our files in one place with R Studio projects}
 
-This is particularly important for spatial analyses because spatial data files can be challenging to handle and keeping all files in the same folder facilitate the process. Keep originals somewhere else so only changes stuff.
+Keeping your files organised is particularly important for spatial analyses because some spatial data files need to be kept together (e.g., a shapefile requires a minium of three files: .shp, .shx, and .dbf). While other GIS softwares (e.g., ArcCatalog) focuss on organisation and management of spatial files, R, being a programming language, was not created with this purpose in mind. However, it's really easy to keep track of your files using RStudio and I highly recommend creating a RStudio project for each tutorial, assignement or research project. For those that are unfamiliar with RStudio, you can find information on how to create a project on the \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio webpage}. You can then easily place a copy of your data files in the project folder and saved all of you script and results in this same folder. By default the RStudio project will have the main porject folder as the working directory, making the import of files into R quite easy. 
+
+\begin{Exercise}
+
+Create a RStudio project for this tutorial and place the two .csv files found in the \href{https://github.com/MarieAugerMethe/GISinR/tree/master/Tutorials/Tutorial1}{GitHub Tutorial1 folder} into project folder you just created.
+
+\end{Exercise}
 
 \subsection{Make reproducible examples with R scripts}
 
@@ -164,6 +170,7 @@ worldSPmoll <- spTransform(worldSP, CRS("+proj=moll"))
 plot(worldSPmoll)
 box()
 @
+
 
 Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
 {

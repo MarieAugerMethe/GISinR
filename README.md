@@ -8,5 +8,4 @@ Some of the data used are public data sets from the Ocean Tracking Network (OTN)
 - sableSealBioP.csv and sableSealBioP.kml are the “Animal” files from the OTN Canada Sable Island Grey Seal Bioprobes project (http://members.oceantrack.org/data/discovery/SGS.htm)
 - nbCod.csv is the “Animal” files from the Shippagan, NB: Cod tagging project (http://members.oceantrack.org/data/discovery/SPI.htm)
 
-
 Note that I have removed and changed some of the information from these datasets, just to create good examples for teaching purposes.
