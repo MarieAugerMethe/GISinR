@@ -38,11 +38,11 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Good R practices}
 
-If you want to be able to reproduce your analyses, it is important to keep track of your files, write down all coding steps, and preferably do version control. Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis.
+To be able to reproduce your analyses, it is important to keep track of your files, write down all coding steps, and preferably do version control. People differ in their method to make their analyses reproducible. In this first section, I will introduce my favourite proceduress. 
 
 \subsection{Keep all our files in one place with R Studio projects}
 
-Keeping your files organised is particularly important for spatial analyses because some spatial data files need to be kept together (e.g., a shapefile requires a minium of three files: .shp, .shx, and .dbf). While other GIS softwares (e.g., ArcCatalog) focuss on organisation and management of spatial files, R, being a programming language, was not created with this purpose in mind. However, it's really easy to keep track of your files using RStudio and I highly recommend creating a RStudio project for each tutorial, assignement or research project. For those that are unfamiliar with RStudio, you can find information on how to create a project on the \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio webpage}. You can then easily place a copy of your data files in the project folder and saved all of you script and results in this same folder. By default the RStudio project will have the main porject folder as the working directory, making the import of files into R quite easy. 
+Keeping your files organised is particularly important for spatial analyses because some spatial data files need to be kept together (e.g., a shapefile requires a minium of three files: .shp, .shx, and .dbf). While other GIS softwares (e.g., ArcCatalog) focuss on organisation and management of spatial files, R, being a programming language, was not created with this purpose in mind. However, it's really easy to keep track of your files using RStudio and I highly recommend creating a RStudio project for each tutorial, assignement or research project. For those that are unfamiliar with RStudio, you can find information on how to create a project on the \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio webpage}. You can then easily place a copy of your data files in the project folder and saved all of you script and results in this same folder. By default the RStudio project will have the main project folder as the working directory, making the import of files into R straighforward. 
 
 \begin{Exercise}
 
@@ -52,11 +52,23 @@ Create a RStudio project for this tutorial and place the two .csv files found in
 
 \subsection{Make reproducible examples with R scripts}
 
-Share complete analysis by sending an R script. Put comments!
+Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis. The best way to keep track of your coding steps is to create a .R script that has all code lines written and saved. In  RStudio, you can easily run the lines  from the R script using the short cuts (Mac: command+enter, Windows: ctrl+enter, see \href{https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts}{RStudio website for other shortcuts}). I write down every steps in the R script, including the file import function, all of my data handling and management, the analysis functions, and even the sanity check that I do to make sure that I didn't insert a bug in the code. Very importantly, I comment my code. I tend to write a comment for almost every single line I write. This is extremely helpful, when you go back to an old analysis and is really good when you want to share your code with someone else. To put comments, you simply need to put \# at the beggining of the line, e.g.,
 
-\textbf{\textit{For those that are taking the class for credit, I want you to send me by e-mail for each tutorial a \texttt{R} script that has all of the code from the tutorial, including the code found in the document.}}
+<<commentEG>>=
+# This is a comment and if you run the line nothing will happen
+@
+
+In this document my comments are in purpely-pink, while the R output, which also start with \# are in black. They have the \#\# on purpose so when you copy and paste the code section into the output is not ran.
+
+\begin{Exercise}
+
+Create an R script for this tutorial and write down all of the code lines. Make sure to add, in addition to my comments, your own comments to help you understand what you did. For those that are taking the class for credit, I want you to send me by e-mail for each tutorial a \texttt{R} script that has all of the code from the tutorial, including the code found in the document. I will grade you, based on your code.
+
+\end{Exercise}
 
 \subsection{Keep track of your changes with version control}
+
+Version control is a system to keep track of the changes you make in you files. Version control is particularly important when coding, as it allows you to go back to previous version of your code and debug more easily. They are many version control methods, the one I use is git, in particular I use \href{https://github.com/}{GitHub} and \href{https://about.gitlab.com/}{GitLab}. In general you need to pay to have private remote repositories (place on a server that saves the files and changes), but public repositories on GitHub are free of charge. I recommend creating yourself a GitHub account and downloading the GitHub app. All of the class info is on GitHub and this class is a good way to get you accustomed to GitHub.
 
 \section{\texttt{Spatial} class}
 
