@@ -146,7 +146,8 @@ proj4string(bioPrSP)
 is.projected(bioPrSP)
 @
 
-That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla
+That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla distance need projection.
+
 
 <<introGDAL>>=
 library(rgdal)
@@ -162,7 +163,7 @@ box()
 @
 
 
-<<worldProj, fig.width=9, fig.height=4>>=
+<<worldProj, fig.width=9, fig.height=8>>=
 library(maptools) # Need maptools for pruneMap and map2SpatialPolygons
 # This is not a an Spatial object from the package sp like bioPr
 # Instead it's a object class map
@@ -174,12 +175,30 @@ IDs <- sapply(strsplit(worldMap$names, ":"), function(x) x[1])
 worldSP <- map2SpatialPolygons(worldMap, IDs=IDs, proj4string = CRS("+proj=longlat +ellps=WGS84"))
 
 # Now let's look at transformations
-layout(matrix(1:2, nrow=1))
+layout(matrix(1:4, nrow=2))
 plot(worldSP)
 box()
+# Using NAD83 geographic coordinate system, using the EPSG code
+worldSPnad83 <- spTransform(worldSP, CRS("+init=epsg:4269"))
+is.projected(worldSPnad83)
+plot(worldSPnad83)
+box()
+# Using Project coordinate system
 # Projecting to Mollweide projection
 worldSPmoll <- spTransform(worldSP, CRS("+proj=moll"))
+is.projected(worldSPmoll)
 plot(worldSPmoll)
+box()
+# UTM zone 20 for Nova Scotia
+# Need to crop map around Nova Scotia
+# Remove the limit
+worldMapNS <- map("world", resolution=0, fill=TRUE, plot=FALSE, xlim=c(-100,-20), ylim=c(20,89))
+# But you can transform it into a spatial object using
+IDs <- sapply(strsplit(worldMapNS$names, ":"), function(x) x[1])
+worldNSSP <- map2SpatialPolygons(worldMapNS, IDs=IDs, proj4string = CRS("+proj=longlat +ellps=WGS84"))
+worldSPutm20 <- spTransform(worldNSSP, CRS("+proj=utm +zone=20 +datum=WGS84"))
+is.projected(worldSPutm20)
+plot(worldSPutm20)
 box()
 @
 
