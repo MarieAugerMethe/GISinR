@@ -14,6 +14,7 @@
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hooks
 % Hook for tilde
 <<setup, include=FALSE>>=
 library(knitr)
@@ -200,6 +201,51 @@ worldSPutm20 <- spTransform(worldNSSP, CRS("+proj=utm +zone=20 +datum=WGS84"))
 is.projected(worldSPutm20)
 plot(worldSPutm20)
 box()
+@
+
+Note that WGS84 and NAD83 are very similar. 
+
+<<epsgSearch, fig.width=9>>=
+# Can search the epsg list of projection
+# First make a data frame of EPSG project codes
+EPSG <- make_EPSG()
+# Can search this list using key words, e.g. Nova Scotia
+EPSG[grep("Nova Scotia", EPSG$note),1:2]
+# Canada
+EPSG[grep("Canada", EPSG$note),1:2]
+# NSIDC - National Snow and Ice Data Center
+EPSG[grep("NSIDC", EPSG$note),1:2]
+# You can then use the epsg code in CRS directly or use CRS to get proj4string code
+CRS("+init=epsg:3408")
+CRS("+init=epsg:3978")
+CRS("+init=epsg:2295")
+
+
+# Canada in different projections
+layout(matrix(1:4,nrow=1))
+canadaMap <- map("world", "canada", resolution=0, fill=TRUE, plot=FALSE)
+IDs <- sapply(strsplit(canadaMap$names, ":"), function(x) x[1])
+canadaSP <- map2SpatialPolygons(canadaMap, IDs=IDs, proj4string = CRS("+proj=longlat +ellps=WGS84"))
+
+# Plate carree - WGS84
+plot(canadaSP)
+box()
+
+# MTM Nova Scotia zone 5
+canadaSPmtm5 <- spTransform(canadaSP, CRS("+init=epsg:2295"))
+plot(canadaSPmtm5)
+box()
+
+# Canada Atals Lambert
+canadaSPal <- spTransform(canadaSP, CRS("+init=epsg:3978"))
+plot(canadaSPal)
+box()
+
+# NSIDC EASE-Grid North
+canadaSPnsidc <- spTransform(canadaSP, CRS("+init=epsg:3408"))
+plot(canadaSPnsidc)
+box()
+
 @
 
 
