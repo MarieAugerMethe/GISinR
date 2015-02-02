@@ -13,6 +13,8 @@
 
 \begin{document}
 
+\textbf{Notes from the class: Maybe add an examples where we compare the coordinates of object with different projections. In addition, many were confused about the projections, maybe divided better the steps that goes from a map to a reprojected sp object. (1. Get map, 2. Make the map an sp object, 3. Transform the projection). Maybe look into when prune is needed and when the clip to limit needed. Maybe in would be better to just present the sp class in this tutorial and present the projections in tutorial 2. Finally, check whether I need ggplot2 for the spplot.}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
 % Hook for tilde
@@ -27,7 +29,8 @@ knit_hooks$set(source = function(x, options) {
 @
 <<setupOp, include=FALSE>>=
 opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
-               tidy.opts=list(blank=FALSE, width.cutoff=52))
+               tidy.opts=list(blank=FALSE, width.cutoff=52),
+               size="large")
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,6 +38,8 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 \title{GIS in R: Tutorial 1}
 \date{}
 \maketitle
+
+\large
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Good R practices}
