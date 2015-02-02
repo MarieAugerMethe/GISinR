@@ -13,7 +13,7 @@
 
 \begin{document}
 
-\textbf{Notes from the class: Maybe add an examples where we compare the coordinates of object with different projections. In addition, many were confused about the projections, maybe divided better the steps that goes from a map to a reprojected sp object. (1. Get map, 2. Make the map an sp object, 3. Transform the projection). Maybe look into when prune is needed and when the clip to limit needed. Maybe in would be better to just present the sp class in this tutorial and present the projections in tutorial 2. Finally, check whether I need ggplot2 for the spplot.}
+\textbf{Notes from the class: Maybe add an examples where we compare the coordinates of object with different projections. In addition, many were confused about the projections, maybe divided better the steps that goes from a map to a reprojected sp object. (1. Get map, 2. Make the map an sp object, 3. Transform the projection). Maybe look into when prune is needed and when the clip to limit needed. Maybe in would be better to just present the sp class in this tutorial and present the projections in tutorial 2. Actually, maybe a trick aournd this would be to save the sp map object and put the saved file in the tutorial folder. Finally, check whether I need ggplot2 for the spplot.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
