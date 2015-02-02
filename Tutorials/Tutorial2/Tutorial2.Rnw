@@ -1,0 +1,105 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+
+% For tilde
+\usepackage{xspace}
+\newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hooks
+% Hook for tilde
+<<setup, include=FALSE>>=
+library(knitr)
+hook_source = knit_hooks$get('source')
+knit_hooks$set(source = function(x, options) {
+  txt = hook_source(x, options)
+  # extend the default source hook
+  gsub('~', '\\\\mytilde', txt)
+})
+@
+<<setupOp, include=FALSE>>=
+opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
+               tidy.opts=list(blank=FALSE, width.cutoff=52),
+               size="large")
+@
+
+\author{Marie Auger-M\'eth\'e}
+\title{GIS in R: Tutorial 2}
+\date{}
+\maketitle
+
+\large
+\section{\texttt{Spatial} class}
+
+Maybe show how lattice works based by showing a series of plots with different years of tagging
+
+LOOK AT gmap
+Look at ggplot2 projections
+ARE OBJECT FROM map S4 class object
+
+<<>>=
+colSp <- c("blue","red")
+plot(bioPrSP, pch=19, cex=0.5, col=colSp[bioPrSP$scientificname])
+box()
+legend("topright", legend=unique(bioPrSP$scientificname), col=colSp,
+       pch=19, pt.cex=0.5, bty="n", title="Species", text.font=3)
+@
+
+<<>>=
+spplot(bioPrSP,zcol="scientificname")
+@
+
+ALL OF THIS IS IN TUTORIAL 1 NOW
+
+Vector data (i.e., Points, Lines, and Polygons) are handle in \texttt{R} using the foundation class \texttt{Spatial} associated with the package \texttt{sp}. To get a feel for how \texttt{Spatial} objects differ from other types of \texttt{R} objects, we will import a .csv table with the locations of bioprobes (this is a simplified version of the data available on the \href{http://members.oceantrack.org/data/discovery/SGS.htm}{Ocean Tracking Network website}).
+
+<<>>=
+# Read the .csv file with OTN Sable Island bioprobe data
+bioPr <- read.csv("sableSealBioP.csv")
+@
+
+To get a sense for this object we will investigate the class, and some of the generic functions.
+
+<<>>=
+# What's the class?
+class(bioPr)
+# Can we summarise the information within it?
+summary(bioPr)
+@
+
+One of the generic function is the \texttt{plot} functions.
+
+<<plot,fig.align="center",out.width="0.7\\linewidth">>=
+plot(bioPr)
+@
+
+Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the data.frame into a \texttt{SpatialPointsDataFrame}. The simplest way to do so is by assigning values to \texttt{coords} slot, which is the component that contains the coordinate values.
+
+<<>>=
+# Load package
+library(sp)
+# Create new data.frame with the exact same value as bioPr
+bioPrSP <- bioPr 
+# Transform this new object into a SpatialPointsDataFrame using the columns that contain the latitude and longitude values
+colnames(bioPrSP)
+coordinates(bioPrSP) <- ~longitude+latitude
+@
+
+Now let's compare the results from the same generic functions.
+<<>>=
+class(bioPrSP)
+summary(bioPrSP)
+@
+
+But more interestingly, let's look at the \texttt{plot} function.
+<<>>=
+plot(bioPrSP)
+# With an added box around the figure
+box()
+@
+
+Here instead of plotting the data values from all the columns the plot shows the location of the row in space.
+
+\end{document}
