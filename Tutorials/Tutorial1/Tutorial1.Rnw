@@ -39,11 +39,11 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Good R practices}
 
-To be able to reproduce your analyses, it is important to keep track of your files, write down all coding steps, and preferably do version control. People differ in their method to make their analyses reproducible. In this first section, I will introduce my favourite proceduress. 
+To be able to reproduce your analyses, it is important to keep track of your files, write down all coding steps, and preferably do version control. People differ in their method to make their analyses reproducible. In this first section, I will introduce my favourite procedures. 
 
 \subsection{Keep all our files in one place with R Studio projects}
 
-Keeping your files organised is particularly important for spatial analyses because some spatial data files need to be kept together (e.g., a shapefile requires a minium of three files: .shp, .shx, and .dbf). While other GIS softwares (e.g., ArcCatalog) focuss on organisation and management of spatial files, R, being a programming language, was not created with this purpose in mind. However, it's really easy to keep track of your files using RStudio and I highly recommend creating a RStudio project for each tutorial, assignement or research project. For those that are unfamiliar with RStudio, you can find information on how to create a project on the \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio webpage}. You can then easily place a copy of your data files in the project folder and saved all of you script and results in this same folder. By default the RStudio project will have the main project folder as the working directory, making the import of files into R straighforward. 
+Keeping your files organised is particularly important for spatial analyses because some spatial data files need to be kept together (e.g., a shapefile requires a minium of three files: .shp, .shx, and .dbf). While other GIS softwares (e.g., ArcCatalog) focuss on organisation and management of spatial files, R, being a programming language, was not created with this purpose in mind. However, it's really easy to keep track of your files using RStudio and I highly recommend creating a RStudio project for each tutorial, assignement or research project. For those that are unfamiliar with RStudio, you can find information on how to create a project on the \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio webpage}. You can then easily place a copy of your data files in the project folder and saved all of your scripts and results in this same folder. By default a RStudio project will have the main project folder as the working directory, facilitating the import of files into R. 
 
 \begin{Exercise}
 
@@ -53,13 +53,13 @@ Create a RStudio project for this tutorial and place the two .csv files found in
 
 \subsection{Make reproducible examples with R scripts}
 
-Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis. The best way to keep track of your coding steps is to create a .R script that has all code lines written and saved. In  RStudio, you can easily run the lines  from the R script using the short cuts (Mac: command+enter, Windows: ctrl+enter, see \href{https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts}{RStudio website for other shortcuts}). I write down every steps in the R script, including the file import function, all of my data handling and management, the analysis functions, and even the sanity check that I do to make sure that I didn't insert a bug in the code. Very importantly, I comment my code. I tend to write a comment for almost every single line I write. This is extremely helpful, when you go back to an old analysis and is really good when you want to share your code with someone else. To put comments, you simply need to put \# at the beggining of the line, e.g.,
+Keeping track of your steps is both important to make your research reproducible and easily shareable, and just because it is nice not to have to start from scratch every time you want to do an analysis. The best way to keep track of your coding steps is to create a .R script that has all code lines written and saved. In  RStudio, you can easily run the lines  from the R script using the keyboard shortcut (Mac: command+enter, Windows: ctrl+enter, see \href{https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts}{RStudio website for other shortcuts}). I write down every steps in the R script, including the file import function, all of my data handling and management, the analysis functions, and even the sanity checks that I do to make sure that I didn't insert a bug in the code. Very importantly, I comment my code. I tend to write a comment for almost every single line I write. This is extremely helpful, when you go back to an old analysis and is really good when you want to share your code with someone else. To put comments, you simply need to put \# at the beggining of the line, e.g.,
 
 <<commentEG>>=
 # This is a comment and if you run the line nothing will happen
 @
 
-In this document my comments are in purpely-pink, while the R output, which also start with \# are in black. They have the \#\# on purpose so when you copy and paste the code section into the output is not ran.
+In this document my comments are in purpely-pink, while the R output, which also start with \# are in black. Outputs start with \#\# on purpose, so when you copy and paste the code section into the output is not ran.
 
 \begin{Exercise}
 
@@ -69,7 +69,7 @@ Create an R script for this tutorial and write down all of the code lines. Make 
 
 \subsection{Keep track of your changes with version control}
 
-Version control is a system to keep track of the changes you make in you files. Version control is particularly important when coding, as it allows you to go back to previous version of your code and debug more easily. They are many version control methods, the one I use is git, in particular I use \href{https://github.com/}{GitHub} and \href{https://about.gitlab.com/}{GitLab}. In general you need to pay to have private remote repositories (place on a server that saves the files and changes), but public repositories on GitHub are free of charge. I recommend creating yourself a GitHub account and downloading the GitHub app. All of the class info is on GitHub and this class is a good way to get you accustomed to GitHub.
+Version control is a system to keep track of the changes you make in you files. Version control is particularly important when coding, as it allows you to go back to previous version of your code and debug more easily. They are many version control methods, the one I use is git, in particular I use \href{https://github.com/}{GitHub} and \href{https://about.gitlab.com/}{GitLab}. In general you need to pay to have private remote repositories (place on a server that saves the files and changes), but public repositories on GitHub are free of charge. I recommend creating yourself a GitHub account and downloading the GitHub app (\href{https://mac.github.com/}{GitHub app for Mac}, \href{https://windows.github.com/}{GitHub for windows}). All of the class info is on GitHub and this class is a good way to get you accustomed to git.
 
 \section{\texttt{Spatial} class}
 
@@ -89,13 +89,13 @@ class(bioPr)
 summary(bioPr)
 @
 
-One of the generic function is the \texttt{plot} functions.
+One of the generic function is the \texttt{plot} function.
 
 <<dataframeplot>>=
 plot(bioPr)
 @
 
-Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the data.frame into a \texttt{SpatialPointsDataFrame}. The simplest way to do so is by assigning values to \texttt{coords} slot, which is the component that contains the coordinate values.
+Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this, we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the \texttt{data.frame} into a \texttt{SpatialPointsDataFrame}. The simplest way to do so, is by assigning values to the \texttt{coords} slot, which is the component that contains the coordinate values.
 
 <<>>=
 # Load package
@@ -122,37 +122,32 @@ plot(bioPrSP)
 box()
 @
 
-Here instead of plotting the data values from all the columns the plot shows the location of the row in space.
+Here instead of plotting the data values from all the columns the plot shows the location of each bioprobe (each row of the \texttt{SpatialPoints} object) in space.
 
 \section{Projection}
 
 While this is great, this plot is not particularly informative. In part, because we don't have any reference points that tells us where the locations are. In Canada? In New Zealand?
 
-To be able to put reference points we need to give to make sure the \texttt{proj4string} slot of the \texttt{Spatial} object is set to the correct projection. When we ran \texttt{summary(bioPrSP)} above, we could see both the Is projected is NA and the proj4string is NA, indicating that the data doesn't have a projection. This is not surprising since we have not specified the projection. We can confirm this with the \texttt{proj4string}.
+To be able to put reference points, the object need to have a coordinate reference system (CRS).  The CRS is set using the \texttt{proj4string} slot of the \texttt{Spatial} object. When we ran \texttt{summary(bioPrSP)} above, we could see both the Is projected is NA and the proj4string is NA, indicating that the data doesn't have a projection. This is not surprising since we have not specified the projection. We can confirm this with the \texttt{proj4string} and \texttt{is.projected} function.
 
 <<>>=
+# Identifies the object's coordinate reference system. This CRS can be a simply a geographic CRS or a projected CRS. If not CRS was assigned it will have a NA value.
 proj4string(bioPrSP)
+# Check whether the object is using a projected CRS. NA means the object has no CRS at all.
 is.projected(bioPrSP)
 @
 
-Coordinate reference systems (CRS), which are used to represent the earth on a plane, are essential part of GIS and had been the focus of cartography.
-
-I'm assuming that the latitude and longitude data from OTN is the conventional GPS data using WGS84 datum. To set it, you can use again the 
+As we discussed in the lecture, a geographic CRS represent the location of a point a globe (i.e., a model of the earth), while a projected CRS maps the Earth's on a plane. CRS are essential part of GIS and had been the focus of cartography. One of the most common geographical CRS is WGS84, it is the base of GPS data and I'm assuming that the latitude and longitude data from OTN use this conventional system. To set it, you can use again \texttt{proj4string} function. 
 
 <<>>=
 proj4string(bioPrSP) <- CRS("+proj=longlat +datum=WGS84")
-# Now bioPrSP has as datum
+# Now bioPrSP has a geographic CRS
 proj4string(bioPrSP)
-# But it's still not projected
+# But is not projected
 is.projected(bioPrSP)
 @
 
-That's because lat lon is not a projection... bla bla bla, and we can set another value to proj4strig, need to projtranform... bla bla bla distance need projection.
-
-
-<<introGDAL>>=
-library(rgdal)
-@
+Because WGS84 is such a convential system, the many maps avaialble with R packages are generally in this same system and you can use this map to add references to your data (in fact because they are both WGS84, we didn't even need to set the CRS of the \texttt{bioPrSP} before hand). 
 
 <<addWorld>>=
 # One way to get a sense of where we are is to plot the world on top
@@ -163,34 +158,52 @@ map("world", resolution=0, add=TRUE)
 box()
 @
 
+One of the important feature that makes \texttt{R} a good language for spatial data, is that there are packages and functions that allow to interpret CRSs and transforms between them. In particular, the \texttt{sp} packages depends on the GDAL and PROJ.4 libraries, which allow to interpret different CRSs. These libraries can be loaded at once using the package \texttt{rgdal}. 
 
-<<worldProj, fig.width=9, fig.height=8>>=
+<<introGDAL>>=
+library(rgdal)
+@
+
+We'll see how to change projects using world maps from the package \texttt{maps}. But before I can show how to transform CRS, I need to make the map into a \texttt{Spatial} object using the package \texttt{maptools}.
+
+<<worldSP>>=
 library(maptools) # Need maptools for pruneMap and map2SpatialPolygons
-# This is not a an Spatial object from the package sp like bioPr
-# Instead it's a object class map
-# Remove the limit 
+# This is not a an Spatial object from the package sp like bioPrSP. 
+# We remove the limit to limit problems on the boundary of the earth when we change projection
 worldMap <- map("world", resolution=0, fill=TRUE, plot=FALSE, xlim=c(-179,179), ylim=c(-89,89))
-worldMap <- pruneMap(worldMap, xlim=c(-179,179))
+class(worldMap) #Instead it's a object class map
 # But you can transform it into a spatial object using
+worldMap <- pruneMap(worldMap, xlim=c(-179,179))
 IDs <- sapply(strsplit(worldMap$names, ":"), function(x) x[1])
 worldSP <- map2SpatialPolygons(worldMap, IDs=IDs, proj4string = CRS("+proj=longlat +ellps=WGS84"))
+@
 
-# Now let's look at transformations
+Now that we have the map of the world as a \texttt{Spatial} object, we can use the \texttt{spTransform} to transform accross different CRSs.
+
+<<worldProj, fig.width=9, fig.height=8>>=
+# Create 4 panels that will be used to display the different projections
 layout(matrix(1:4, nrow=2))
+# Plot the original map (WGS84-Plate Carree)
 plot(worldSP)
+title(main="WGS84 - PC")
 box()
-# Using NAD83 geographic coordinate system, using the EPSG code
+
+# Tranform to NAD83 geographic CRS (Plate Carree projection), using the EPSG code
 worldSPnad83 <- spTransform(worldSP, CRS("+init=epsg:4269"))
-is.projected(worldSPnad83)
+is.projected(worldSPnad83) # Again NAD83 is not projected
 plot(worldSPnad83)
+title(main="NAD83 - PC")
 box()
-# Using Project coordinate system
+
+# Using Projected CRSs
 # Projecting to Mollweide projection
 worldSPmoll <- spTransform(worldSP, CRS("+proj=moll"))
 is.projected(worldSPmoll)
 plot(worldSPmoll)
+title(main="Mollweide")
 box()
-# UTM zone 20 for Nova Scotia
+
+# Universal Transverse Mercator (UTM) zone 20 for Nova Scotia
 # Need to crop map around Nova Scotia
 # Remove the limit
 worldMapNS <- map("world", resolution=0, fill=TRUE, plot=FALSE, xlim=c(-100,-20), ylim=c(20,89))
@@ -200,16 +213,18 @@ worldNSSP <- map2SpatialPolygons(worldMapNS, IDs=IDs, proj4string = CRS("+proj=l
 worldSPutm20 <- spTransform(worldNSSP, CRS("+proj=utm +zone=20 +datum=WGS84"))
 is.projected(worldSPutm20)
 plot(worldSPutm20)
+title(main="UTM 20")
 box()
 @
 
-Note that WGS84 and NAD83 are very similar. 
+Note that WGS84 and NAD83 are very similar. The Mollweide projection is an equal-area projection. The Universal Transverser Mercator (UTM) is a conformal porjection (preserve angle/shape). In this case I used the UTM zone appropriate for Nova Scotia (20), and it means that spatial data close to the center of the zone are not particularly distorted, but those that are far will be.
 
-<<epsgSearch, fig.width=9>>=
-# Can search the epsg list of projection
+It can be hard to find the best projection and even when you know the projection you want to use, it's sometime hard to specify it in R. One way to search for a CRS is using the European Petroleum Survey Group (EPSG) list or through the PROJ.4 info.
+
+<<epsgSearch>>=
 # First make a data frame of EPSG project codes
 EPSG <- make_EPSG()
-# Can search this list using key words, e.g. Nova Scotia
+# Search this data frame using key words, e.g. Nova Scotia
 EPSG[grep("Nova Scotia", EPSG$note),1:2]
 # Canada
 EPSG[grep("Canada", EPSG$note),1:2]
@@ -220,7 +235,19 @@ CRS("+init=epsg:3408")
 CRS("+init=epsg:3978")
 CRS("+init=epsg:2295")
 
+# You can get further information using projInfo
+projI <- projInfo("proj")
+projI[projI$name == "laea",]
+projI[projI$name == "lcc",]
+projI[projI$name == "tmerc",]
 
+# You can also use projInfo to find a projection
+projI[grep("Interrupted", projI$description),]
+@
+
+We can use the information we found to transform the CRS.
+
+<<canadaInDifProj, fig.width=9>>=
 # Canada in different projections
 layout(matrix(1:4,nrow=1))
 canadaMap <- map("world", "canada", resolution=0, fill=TRUE, plot=FALSE)
@@ -229,27 +256,33 @@ canadaSP <- map2SpatialPolygons(canadaMap, IDs=IDs, proj4string = CRS("+proj=lon
 
 # Plate carree - WGS84
 plot(canadaSP)
+title(main="WGS84")
 box()
 
 # MTM Nova Scotia zone 5
 canadaSPmtm5 <- spTransform(canadaSP, CRS("+init=epsg:2295"))
 plot(canadaSPmtm5)
+title(main="MTM Nova Scotia")
 box()
 
 # Canada Atals Lambert
 canadaSPal <- spTransform(canadaSP, CRS("+init=epsg:3978"))
 plot(canadaSPal)
+title(main="Canada Atals Lambert")
 box()
 
 # NSIDC EASE-Grid North
 canadaSPnsidc <- spTransform(canadaSP, CRS("+init=epsg:3408"))
 plot(canadaSPnsidc)
+title(main="NSIDC-EASE Grid North")
 box()
 
 @
 
+The most noticable difference here is the difference in the shape of Canada accross the WGS4 CRS and the other 3, which are projected. One other very noticable difference is that the center of the CRS for the maps differ a lot (that's why Canada's North is not always at the top and center of the map).
 
-Error when you have locations that are outside coordinates system, this can happen for example if there is a typo or for data that come from highly error-prone system (e.g. light curve location system). bla bla
+When you have locations that are outside CRS, e.g., if there is a typo in your data or if the data comes from highly error-prone system (e.g. light curve location system), you will not be able to assign the CRS.
+
 {
 \raggedright
 <<>>=
@@ -264,7 +297,7 @@ coordinates(bioPrSP2) <- ~longitude+latitude
 proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
 @
 }
-We get an error because the longitude value -300 doesn't exist in the coordinate system we chose. As a result the object remains without a coordinate system.
+We get an error because the longitude value -300 doesn't exist in the WGS84 CRS. As a result, the object remains without a coordinate system.
 
 <<>>=
 proj4string(bioPrSP2)
@@ -283,6 +316,18 @@ bioPrSP2 <- bioPrSP2[-ncLonLat[,1],]
 proj4string(bioPrSP2) <- CRS("+proj=longlat +datum=WGS84")
 @
 
+The coordinates in the .csv files were in decimal degrees. However, you might get values that are in degrees, minutes, and seconds. You can convert these using \texttt{char2dms} and \texttt{as}.
+
+<<dms>>=
+# Halifax Lat Lon in Decimal, Minute, and Second:
+Hchar <- c("44d38'55.9716\"N", "63d34'31.1232\"W")
+# Our string has the default spearator for d, m, s, but these could be specified, see ?char2dms
+Hdms <- char2dms(Hchar)
+Hdd <- as(Hdms, "numeric")
+Hdd
+@
+
+
 \section{Attributes: subsetting}
 What if we wanted to create a object that only include a subset of the location. In this example we would like to only have the Atlantic cod (\textit{Gadus morhua}) locations.
 
@@ -296,7 +341,7 @@ bbox(bioPrSP)
 bbox(codPrSP)
 @
 
-The object class we have been using so far, \texttt{SpatialPointsDataFrame}, is actually a more complex level class for point data. I've presented first, because it's the class that I find the more useful because most of my data is poits with some kind of attributes. However, there may be cases where the data you have is only coordinates, with no further attributes associated with them. In this case you would use a \texttt{SpatialPoints} class. For example, let's say we only have the locations of the bioprobes, with no information on the species, sex, age, etc..
+The object class we have been using so far, \texttt{SpatialPointsDataFrame}, is actually a more complex level class for point data. I've presented first, because it's the class that I find the more useful. Most of my data consist of points with some kind of attributes. However, there may be cases where the data you have is only coordinates, with no further attributes associated with them. In this case you would use a \texttt{SpatialPoints} class. For example, let's say we only have the locations of the bioprobes, with no information on the species, sex, age, etc..
 
 <<>>=
 # We are making a bit of an artifical example here by first getting the coordinates of the bioPrSP
@@ -312,7 +357,7 @@ plot(bioPrCoordSP)
 box()
 @
 
-It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case you can put the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}. The idea here is similar to matching rows of database based on their unique key. So here the unique key is the name of the row. So for example let's say we want to match the coordinates of the bioprobes found in the matrix \texttt{bioPrCoord} back to the data.frame \texttt{bioPr}.
+It can happen that you may have the coordinated information coming from a different file than the file in which you have information. In which case, you can put the two together using the \texttt{match.ID} option of \texttt{SpatialPointsDataFrame}. The idea here is similar to matching rows of database based on their unique key. So here the unique key is the name of the row. So for example let's say we want to match the coordinates of the bioprobes found in the matrix \texttt{bioPrCoord} back to the data.frame \texttt{bioPr}.
 
 <<>>=
 # First indentify whether the objects have row name
@@ -322,13 +367,13 @@ str(row.names(bioPr))
 # We know that bioPrCoord should be in the same order as bioPr, becasue we've created bioPrCoord from bioPr. So I think we could use directly
 bioPrSP3 <- SpatialPointsDataFrame(bioPrCoord, bioPr, proj4string = CRS("+proj=longlat +ellps=WGS84"), match.ID = TRUE)
  # Note that match.ID=TRUE is the default value, so you don't need to specify it.
-# We can see that the rows are adequately associated with teh coordinates. Just comapre the longitude and latitude columns to the coordinates
+# We can see that the rows are adequately associated with the coordinates. Just compare the longitude and latitude columns to the coordinates
 bioPrSP3[1:5,]
-# Now just for fun let's mix up the row on bioPrCoord, in this case if we want the row.names to be assign.
+# Now just for fun let's mix up the row on bioPrCoord, in this case if we want the row.names to be assigned.
 row.names(bioPrCoord) <- 1:727
 # Then we can sample at random and the row name will be the same
 bioPrCoordM <- bioPrCoord[sample(1:727,727),] 
-# We see now that compare to the original the row are mixed randomly, be the original row name remains associated with it's original row
+# We see now that, compare to the original, the row are mixed randomly. But, the original row names remain associated with their original row
 head(bioPrCoordM)
 head(bioPrCoord)
 # Now we can create a spatial object that will use the row names, even if mixed randomly, to match the data.frame of attributes to the coordinates
@@ -377,11 +422,15 @@ spplot(bioPrSP,zcol="scientificname")
 
 But more on this on the next class!
 
-\section{Exercise}
+\begin{Exercise}
+
+Create a spatial object with the data found in nbCod.csv, which is a slightly altered version from the Animal file available on the Shippagan, NB: Code tagging project from OTN, see \href{http://members.oceantrack.org/data/discovery/SPI.htm}{project website}. The object should be assigned the appropriate CRS.
+
+\end{Exercise}
 
 \begin{Exercise}
 
-Create a spatial object with the data found in nbCod.csv, which is a slightly altered version from the Animal file available on the Shippagan, NB: Code tagging project from OTN, see \href{http://members.oceantrack.org/data/discovery/SPI.htm}{project website}.
+Transform the CRS of the \texttt{Spatial} object you've created in the previous exercise an Universal Transverse Mercator projection (use the appropriate zone). Plot this transformed object with a map of the world overlaid on top of it.
 
 \end{Exercise}
 
