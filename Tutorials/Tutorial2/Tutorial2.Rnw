@@ -39,67 +39,116 @@ LOOK AT gmap
 Look at ggplot2 projections
 ARE OBJECT FROM map S4 class object
 
-<<>>=
-colSp <- c("blue","red")
-plot(bioPrSP, pch=19, cex=0.5, col=colSp[bioPrSP$scientificname])
-box()
-legend("topright", legend=unique(bioPrSP$scientificname), col=colSp,
-       pch=19, pt.cex=0.5, bty="n", title="Species", text.font=3)
-@
+%%%%%%%%%%%
 
-<<>>=
-spplot(bioPrSP,zcol="scientificname")
-@
+Today will investigate two new classes of \texttt{Spatial} objects: \texttt{SpatialLines} and \texttt{SpatialPolygons}. Both of these classes are more complex than the \texttt{SpatialPoints} class we investigated during the last tutorial. First we will explore the slots associated with these objects. Remember that slots are the important component of the object. To get the slots of an class, you can use the function \texttt{getSlots}.
 
-ALL OF THIS IS IN TUTORIAL 1 NOW
-
-Vector data (i.e., Points, Lines, and Polygons) are handle in \texttt{R} using the foundation class \texttt{Spatial} associated with the package \texttt{sp}. To get a feel for how \texttt{Spatial} objects differ from other types of \texttt{R} objects, we will import a .csv table with the locations of bioprobes (this is a simplified version of the data available on the \href{http://members.oceantrack.org/data/discovery/SGS.htm}{Ocean Tracking Network website}).
-
-<<>>=
-# Read the .csv file with OTN Sable Island bioprobe data
-bioPr <- read.csv("sableSealBioP.csv")
-@
-
-To get a sense for this object we will investigate the class, and some of the generic functions.
-
-<<>>=
-# What's the class?
-class(bioPr)
-# Can we summarise the information within it?
-summary(bioPr)
-@
-
-One of the generic function is the \texttt{plot} functions.
-
-<<plot,fig.align="center",out.width="0.7\\linewidth">>=
-plot(bioPr)
-@
-
-Since we know that the data includes the locations of bioprobes, it would be much better to be able to plot it spatially. To do this we will trasform this \texttt{data.frame} into a \texttt{Spatial} object. In particular, since our data is point data, we will transform the data.frame into a \texttt{SpatialPointsDataFrame}. The simplest way to do so is by assigning values to \texttt{coords} slot, which is the component that contains the coordinate values.
-
-<<>>=
-# Load package
+<<SpatialClass>>=
+# The are all object associated with the sp package
 library(sp)
-# Create new data.frame with the exact same value as bioPr
-bioPrSP <- bioPr 
-# Transform this new object into a SpatialPointsDataFrame using the columns that contain the latitude and longitude values
-colnames(bioPrSP)
-coordinates(bioPrSP) <- ~longitude+latitude
+# Get slots of SpatialPoints
+getSlots("SpatialPoints")
+# Get slots of SpatialLines
+getSlots("SpatialLines")
+# Get slots of SpatialPolygons
+getSlots("SpatialPolygons")
 @
 
-Now let's compare the results from the same generic functions.
+We can note here that the SpatialPoints need the slots: \texttt{coords} with the coordinates of each points, \texttt{bbox} with the bounding box (extent) of the points, and \texttt{proj4sting} which has the coordinate reference system (CRS). While both the \texttt{SpatialLines} and \texttt{SpatialPolygons} use the \texttt{bbox} and \texttt{proj4string} just like the \texttt{SpatialPoints}, they do not use \texttt{coords} slots and instead use \texttt{lines} and \texttt{polygons}. These two slots are in fact list of objects of class \texttt{Line} and \texttt{Polygon}.  
+
+<<linespolygons>>=
+# Note that both these have slots that are lists.
+
+# Get the slots of Lines
+getSlots("Lines")
+# Get the slots of Polygons
+getSlots("Polygons")
+@
+
+The lists will take a list of object of class Line or Polygon, and each of the Line and Polygon in the list will need to be associated with an ID in the ID slot. The very basis of the \texttt{SpatialLines} and \texttt{SpatialPolygons} are the class \texttt{Line} and \texttt{Polygon}, which as we can see below are the class that have a slot for coordinates.
+
+<<LinePolygon>>=
+# Look at the slots of the fundamental class for SpatialLines
+getSlots("Line")
+# Look at the slots of the fundamental class for SpatialPolygon
+getSlots("Polygon")
+# Note that both have the coords slot
+@
+
+
+\subsection{\texttt{SpatialLines}}
+
+Here we are going to create a \texttt{SpatialLines} object based on the location of a grey seal. The data used here is the data from REFERENCE HERE. Just to use the simplest example possible, we will make a \texttt{SpatialLines} object with only one seal.
+
+<<seal1>>=
+# Read files with movement data
+sealMov <- read.csv("Seal3_169_2_01_1.csv")
+# Let's look at the first column to get a sense of what's in the file
+head(sealMov)
+# How many seals do we have and what's their ID
+unique(sealMov$SealID)
+# Get only the points for seal 66486
+seal1 <- subset(sealMov, SealID == 66486 ,drop=TRUE)
+@
+
+Now we want to order the locations of the seal by date, so when we connect the points with lines they are ordered to represent the movement of the animal. To do this we will use the \texttt{DateTime} class, which is an important class in R.
+
+<<OrderingDate>>=
+# The class of the date column is factor, which is not great for ordeing dates
+class(seal1$Date)
+# Make the date time into a POSIXlt class, which is a basic class for date and time in R. This class understand how time should be ordered. You need to specify the format of the data and the time zone (which we are assuming is UTC), see ?POSIXlt
+seal1$Date <- as.POSIXlt(seal1$Date, format="%d.%m.%y %H:%M:%S", zone="UTC")
+# Now the class is POSIXlt
+class(seal1$Date)
+# We can now order the seal1 object by date and time
+seal1 <- seal1[order(seal1$Date),]
+@
+
+Now, we will create a \texttt{SpatialPointsDataFrame} object based on the location of the seal like we did in the last tutorial. 
+
+<<sealSpPoint>>=
+# We can create a SpatialPointsDataFrame by assigning the coordinates
+coordinates(seal1) <- ~Lon + Lat
+# We then assign the geographic CRS, which we are assuming is WGS84
+proj4string(seal1) <- CRS("+proj=longlat +datum=WGS84")
+# Now we have a SpatialPointsDataFrame object
+class(seal1)
+@
+
+Now we will create a \texttt{Line} using the \texttt{SpatialPointsDataFrame}.
+
+<<sealLine>>=
+# Creat a Line object
+seal1L <- Line(seal1)
+# Now the class is Line
+class(seal1L)
+# Can we plot it?
+plot(seal1L)
+# What's the info
+summary(seal1L)
+@
+
+You have noticed that the \texttt{Line} object we just created is not useful in itself. All it does is assess that all of the points are associated with one line. In our case all of the locations of this seal is associated with one movement path. The \texttt{Line} object needs to be incorporated in a \texttt{Lines} object to become interesting. Note that the \texttt{Lines} object is a list of \texttt{Line} with an associated ID. In our case we only have one \texttt{Line}. 
+
+NOT SURE ABOUT THE LIST
+
+<<sealLines>>=
+# Create a Lines object using a list of Line
+seal1Ls <- Lines(list(seal1L), ID="a seal")
+# Note that in this case, becasue we only have one Line, you could have used directly Line
+seal1Ls <- Lines(seal1L, ID="a seal")
+
+@
+
+
 <<>>=
-class(bioPrSP)
-summary(bioPrSP)
+# Now let's
+seal1SpL <- SpatialLines(list(Lines(Line(seal1), ID="a seal")))
+plot(seal1SpL)
+plot(seal1, add=TRUE, pch=19, cex=0.5)
 @
 
-But more interestingly, let's look at the \texttt{plot} function.
-<<>>=
-plot(bioPrSP)
-# With an added box around the figure
-box()
-@
 
-Here instead of plotting the data values from all the columns the plot shows the location of the row in space.
+
 
 \end{document}
