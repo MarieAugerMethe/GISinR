@@ -128,27 +128,129 @@ plot(seal1L)
 summary(seal1L)
 @
 
-You have noticed that the \texttt{Line} object we just created is not useful in itself. All it does is assess that all of the points are associated with one line. In our case all of the locations of this seal is associated with one movement path. The \texttt{Line} object needs to be incorporated in a \texttt{Lines} object to become interesting. Note that the \texttt{Lines} object is a list of \texttt{Line} with an associated ID. In our case we only have one \texttt{Line}. 
-
-NOT SURE ABOUT THE LIST
+You have noticed that the \texttt{Line} object we just created is not useful in itself. All it does is assess that all of the points are associated with one line. In our case all of the locations of this seal is associated with one movement path. The \texttt{Line} object needs to be incorporated in a \texttt{Lines} object. Note that the \texttt{Lines} object is a list of \texttt{Line} with an associated ID. The \texttt{Lines} object is also of little interest by itself, it's only a building block for the \texttt{SpatialLines}.
 
 <<sealLines>>=
-# Create a Lines object using a list of Line
-seal1Ls <- Lines(list(seal1L), ID="a seal")
-# Note that in this case, becasue we only have one Line, you could have used directly Line
-seal1Ls <- Lines(seal1L, ID="a seal")
-
+# Create a Lines object using a Line
+seal1Ls <- Lines(seal1L, ID="seal1")
+# You can't plot it
+plot(seal1Ls)
+# And the info is not that interesting
+summary(seal1Ls)
+# But let's create a SpatialLines object with this Lines object. Note that to make SpatialLines you need a list of Lines
+seal1SpL <- SpatialLines(list(seal1Ls))
+# Now we finnally have a Spatial object that can be plotted
+plot(seal1SpL)
+# Let's add the points
+plot(seal1, add=TRUE, pch=19, cex=0.5)
+# and a box around the plot
+box()
 @
+
+Because \texttt{Line} and \texttt{Lines} are not \texttt{Spatial} object and only the \texttt{SpatialLines} object is a \texttt{Spatial} object (with a CRS), you need to specify the CRS. Here we are using the same CRS as the seal locations. Note that the \texttt{SpatialLines}  assume that the animal is moving straight between the points, which may not make sense in all type of CRS, including in nonprojected CRS like the WGS84.
+
+<<spLProj>>=
+# Check the current CRS
+proj4string(seal1SpL)
+# Assign the same CRS as the seal locations which are the base of this SpatialLines object
+proj4string(seal1SpL) <- proj4string(seal1)
+@
+
+So I've shown you the step-by-step way to go from \texttt{SpatialPointsDataframe} to \texttt{SpatialLines}, but you could combined all of the lines to make one code line.
+
+<<CreateSpLin1L>>=
+seal1SpL2 <- SpatialLines(list(Lines(Line(seal1), ID="seal1")), 
+                         proj4string=CRS(proj4string(seal1)))
+# Because we are just lumping the functions from above, it should give you exactly the same results
+identical(seal1SpL, seal1SpL2)
+@
+
+An even quicker way to create a \texttt{SpatialLines} from a\texttt{SpatialPointsDataFrame} is to use \texttt{as}.
+
+<<SpPsSpLs>>=
+# Creating a SpatialLines from the seal1 SpatialPoints object supper quickly.
+seal1SpL3 <- as(seal1, "SpatialLines")
+# This will not be exactly the same
+identical(seal1SpL, seal1SpL3)
+# The only difference here is that sealSpL3 that we just created has the defaut ID "ID", if we create a new SpatialLines but name the ID as "ID" they are going to be identical.
+seal1SpL4 <- SpatialLines(list(Lines(Line(seal1), ID="ID")), 
+                          proj4string=CRS(proj4string(seal1)))
+identical(seal1SpL3, seal1SpL4)
+@
+
+So in our first example, we only had one continous movement path, but we might want a \texttt{SpatialLines} object with multiple paths. For example, we might want to have one\texttt{SpatialLines} object with the movement path of the three seals in our sealMov \texttt{data.frame}. In the first case, we would like to have each path to be a different \texttt{Lines} object with a different ID representing the seal ID. So for this we will need to create a \texttt{Lines} object for each seal. 
+
+<<seal2Lines>>=
+# Before we create the line objects we would like to order the sealMov based on indibidual and then on time, so we need to make the date column a POSIXlt object. See above for further explanation.
+sealMov$Date <- as.POSIXlt(sealMov$Date, format="%d.%m.%y %H:%M:%S", zone="UTC")
+# We will select the row by sealID below, so we only need to order it by dates followed by date, use order
+sealMovD <- sealMov[order(sealMov$Date),]
+# Check the first rows, now date are in order but SealID is mixed
+head(sealMovD)
+
+# So we want to create a Lines obeject for the data points associated with each seal, so if we did it for one seal, e.g.: SealID: 66506, we could do it
+seal2Ls <- Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 66506)
+# So this is a Lines object
+class(seal2Ls)
+@
+
+To most efficient way to a \texttt{Lines} for each seal, is through \texttt{lapply}. \texttt{lapply} is a base function in \texttt{R} that applies a function repeatly to object. There are many such function and \texttt{lapply} returns a list. Here is a few very easy examples of \texttt{lapply}.
+
+<<lapplyeg>>=
+# To familiarize yourself with lapply, we going to apply it to a simple function
+# Create a matrix
+oo <- matrix(1:3,nrow=3)
+# Just a column with value 1-3
+oo
+# Here we make an lapply function that adds 1 to the value each each row of oo
+lapply(oo, function(x){x+1})
+# You could do something more complicated that use two different object. E.g., let's create new matrix
+aa <- matrix(1:6, nrow=3)
+# Just a matrix with value from 1-6 in two columns
+aa
+# Now we want to do the mean of each row using lapply. We use oo as the row index, as in if oo is 1 we do mean(aa[1,]).
+lapply(oo, function(x){mean(aa[x,])})
+@
+
+Now we will use \texttt{lapply} to do a list of \texttt{Lines}. We are going to use the SealID as our index and create one \texttt{Lines} per seal.
+
+<<3sealLines>>=
+# Get the id of the 3 seals
+sealIndex <- unique(sealMovD$SealID)
+sealIndex
+# now use the lapply on the code we described above: Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 66506) 
+sealsLs <- lapply(sealIndex, 
+       function(x){Lines(Line(sealMovD[sealMovD$SealID == x, c("Lon","Lat")]), ID = x)})
+# We should get a list back
+class(sealsLs)
+# And the elements of this list should be a Lines object
+class(sealsLs[[1]])
+@
+
+
+We can now use this list to create a \texttt{SpatialLines}.
+
+<<allsealsSP>>=
+# Create a SpatialLines based on the list and assign the CRS
+sealsSpL <- SpatialLines(sealsLs, 
+                          proj4string=CRS(proj4string(seal1)))
+# We can plot it and assign different coulors to the different Lines
+plot(sealsSpL, col=c("red","purple","orange"))
+# with a box around the plot
+box()
+@
+
+
+Note that the \texttt{Lines} object can contain multiple \texttt{Line} but can only be associated with a single ID. The idea is to be able to link multiple \texttt{Line} to the same attributes. To give you an example here,
+
+
 
 
 <<>>=
-# Now let's
-seal1SpL <- SpatialLines(list(Lines(Line(seal1), ID="a seal")))
-plot(seal1SpL)
-plot(seal1, add=TRUE, pch=19, cex=0.5)
+#> bubble(df2, "z1", key.space = "bottom")
+# FOR size
+#> spplot(df2, "z1", key.space = "bottom")
 @
-
-
 
 
 \end{document}
