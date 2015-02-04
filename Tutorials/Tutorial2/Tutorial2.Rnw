@@ -194,7 +194,7 @@ seal2Ls <- Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 
 class(seal2Ls)
 @
 
-To most efficient way to a \texttt{Lines} for each seal, is through \texttt{lapply}. \texttt{lapply} is a base function in \texttt{R} that applies a function repeatly to object. There are many such function and \texttt{lapply} returns a list. Here is a few very easy examples of \texttt{lapply}.
+To most efficient way to do a \texttt{Lines} for each seal, is through \texttt{lapply}. \texttt{lapply} is a base function in \texttt{R} that applies a function repeatly to object. There are many such function and \texttt{lapply} returns a list. Here is a few very easy examples of \texttt{lapply}.
 
 <<lapplyeg>>=
 # To familiarize yourself with lapply, we going to apply it to a simple function
@@ -238,11 +238,35 @@ sealsSpL <- SpatialLines(sealsLs,
 plot(sealsSpL, col=c("red","purple","orange"))
 # with a box around the plot
 box()
+# Add a bit of canada to give you a reference point
+map("world", region="Canada", add=TRUE)
+# These animals are moving from Sable Island at sea and back.
 @
 
+Note that here we are putting one \texttt{Line} object per \texttt{Lines} object. However, a \texttt{Lines} object can contain multiple \texttt{Line}, as long as these can be associated with a single ID. I'm not sure when this would be useful, but one example I could think of was if you had a movement path that was disconnected. For example, if you had multiple foraging trips for one individual. So as an example, here we are going to focuss on the movement path of seal 66486, which looks like he is doing two trips. Here I'm only going to show you how this work by putting all 3 seal as one \texttt{Lines} rather than one \texttt{Lines} per individual.
 
-Note that the \texttt{Lines} object can contain multiple \texttt{Line} but can only be associated with a single ID. The idea is to be able to link multiple \texttt{Line} to the same attributes. To give you an example here,
 
+<<allsealsSPLine>>=
+# This is a bit of an artificial example
+# The big difference here is that we are using one Lines for all 3 seals, so here we use sapply only to create a list of Line object not Lines object
+sealsL <- lapply(sealIndex, 
+       function(x){Line(sealMovD[sealMovD$SealID == x, c("Lon","Lat")])})
+# We should get a list back
+class(sealsL)
+# And now the elements of this list should be a Line object
+class(sealsL[[1]])
+# compare to the sealsLs that we created above
+class(sealsLs[[1]])
+# If we create a Lines object with the 3 Line, we won't be able to assign to each Line the seal ID, we will need to give it only one ID which groups the 3 Line, here just "OTN seals".
+sealsLs2 <- Lines(sealsL, ID="OTN seals")
+# You can try to put 3 IDs put it won't work
+sealsLs3 <- Lines(sealsL, ID=sealIndex)
+# Now we can make a SpatialLines from the new Lines object we have created, remember that SpatialLines needs a list of Lines
+sealsSpL2 <- SpatialLines(list(sealsLs2), proj4string=CRS(proj4string(seal1)))
+# We can plot this object, but assigning color is not going to work teh same, only the first color is going to be used because all of these 3 movement path are group together under one ID.
+plot(sealsSpL2, col=c("red","purple","orange"))
+box()
+@
 
 
 
@@ -250,6 +274,13 @@ Note that the \texttt{Lines} object can contain multiple \texttt{Line} but can o
 #> bubble(df2, "z1", key.space = "bottom")
 # FOR size
 #> spplot(df2, "z1", key.space = "bottom")
+# # We can plot it and assign different coulors to the different Lines
+# plot(sealsSpL, col=c("red","purple","orange"))
+# # with a box around the plot
+# box()
+# # Add a bit of canada to give you a reference point
+# map("world", region="Canada", add=TRUE)
+# # These animals are moving from Sable Island at sea and back.
 @
 
 
