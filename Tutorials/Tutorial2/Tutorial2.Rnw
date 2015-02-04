@@ -227,7 +227,6 @@ class(sealsLs)
 class(sealsLs[[1]])
 @
 
-
 We can now use this list to create a \texttt{SpatialLines}.
 
 <<allsealsSP>>=
@@ -243,7 +242,23 @@ map("world", region="Canada", add=TRUE)
 # These animals are moving from Sable Island at sea and back.
 @
 
-Note that here we are putting one \texttt{Line} object per \texttt{Lines} object. However, a \texttt{Lines} object can contain multiple \texttt{Line}, as long as these can be associated with a single ID. I'm not sure when this would be useful, but one example I could think of was if you had a movement path that was disconnected. For example, if you had multiple foraging trips for one individual. So as an example, here we are going to focuss on the movement path of seal 66486, which looks like he is doing two trips. Here I'm only going to show you how this work by putting all 3 seal as one \texttt{Lines} rather than one \texttt{Lines} per individual.
+In the last tutorial, I showed how \texttt{SpatialPoints} had an analogue with attributes called \texttt{SpatialPointsDataFrame}. We can also create a \texttt{SpatialLinesDataFrame} from a \texttt{SpatialLines} object. Here we are going to add attributes to the seal movement paths.
+
+
+<<SpLDF>>=
+# We are going to create a data.frame with some attribute to add to each seal. This is a completely inveted example and I'm going to assign arbitrary value to each seal that represents, let say, their let's say age and one with weight
+sealAtt <- as.data.frame(cbind(age=c(1.2,3,3.2), weight=c(110, 126, 156)))
+# We match the attribute based on ID and we need to assign the ID as the row name of our datae frame
+rownames(sealAtt) <- sealIndex
+# Now we can create the SpatialLinesDataFrame
+sealsSpLdf <- SpatialLinesDataFrame(sealsSpL,data=sealAtt)
+# Info
+summary(sealsSpLdf)
+# Now you could plot the Lines based on their value, based on their weight
+spplot(sealsSpLdf, zcol="weight")
+@
+
+Note that we have been putting one \texttt{Line} object per \texttt{Lines} object. However, a \texttt{Lines} object can contain multiple \texttt{Line}, as long as these can be associated with a single ID. I'm not sure when this would be useful, but one example I could think of was if you had a movement path that was disconnected. For example, if you had multiple foraging trips for one individual. Here I'm only going to show you how this work by putting all 3 seal as one \texttt{Lines} rather than one \texttt{Lines} per individual.
 
 
 <<allsealsSPLine>>=
@@ -268,6 +283,22 @@ plot(sealsSpL2, col=c("red","purple","orange"))
 box()
 @
 
+However, the disadvantage here is that we can only assign a set of attribute for the three seals at the same time. We can't differentiate between them. That's becasue you link the attributes to the \texttt{SpatialLines} based on the ID slot, which is only attributed to the \texttt{Lines}, not the \texttt{Line}. the example below demonstrate the points.
+
+<<linesfor3seal>>=
+# We can link data.frame we have created above
+sealsSpLdf2 <- SpatialLinesDataFrame(sealsSpL2, data=sealAtt)
+# Even if we say to match it without the ID names
+sealsSpLdf2 <- SpatialLinesDataFrame(sealsSpL2, data=sealAtt, match.ID=FALSE)
+# You could do it if your data.frame has only one row
+sealsSpLdf2 <- SpatialLinesDataFrame(sealsSpL2, data=sealAtt[1,], match.ID=FALSE)
+# And that's becase the sealsSpL2 only has one Lines object
+length(slot(sealsSpLdf2,"lines"))
+# Compare to the previous one that had 3
+length(slot(sealsSpLdf,"lines"))
+@
+
+So what you can retain here is that you should do as many \texttt{Lines} as you want to have separated entities.
 
 
 <<>>=
