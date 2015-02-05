@@ -1,0 +1,41 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\usepackage{hyperref}
+\usepackage{exercise}
+
+\title{Assignment 2}
+\author{Marie Auger-M\'eth\'e}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+Please send me before next class (Feb 9) an e-mail with all the answers for this assignment. All \texttt{R} code should be in one script. Please indicate which lines are associated with each exercise by including comments in your code. I addition, send me a copy of the figures in your e-mail. You can save the figures in .pdf or .jpeg format.
+
+\begin{Exercise}
+
+Create one \texttt{SpatialLines} object from three different files.
+
+\Question
+Import the m10\_telemetry.json, m11\_telemetry.json, and m12\_telemetry.json files from the Ocean Tracking Network (OTN) Ocean Glider and Marine Observation project found at \url{http://gliders.oceantrack.org/ajax}. These are datasets associated with Slocum glider missions, more information on Slocum glider page: \url{http://gliders.oceantrack.org/slocum.php}. The Slocum datasets are in json files. There are many \texttt{R} packages that can import json data. For example, you can use the function \texttt{fromJSON} from the \texttt{jsonlite} package as follow: \texttt{slocum10 <- fromJSON(txt="m10\_telemetry.json")}.
+
+\Question Use this data to create a single \texttt{SpatialPointsDataFrame}. The coordinates are found in the columns lon and lat, and the time associated with those locations are found in the column gpstime. This \texttt{SpatialPointsDataFrame} should have a column in the attributes that keeps track of the file from which the coordinates comes from (i.e. a column with m10 for each row associated with the m10\_telemetry.json file and m11 for m11\_telemetry.json, etc). \textbf{Tips:} You can create the column with the json file ID in each \texttt{data.frame} first (e.g., \texttt{slocum10\$m <- "m10"}). You can then create one \texttt{data.frame} from multiple \texttt{data.frame}s by using \texttt{rbind(slocum10, slocum11, slocum12)}. 
+
+\Question Create a \texttt{SpatialLines} object for which each json file has its own \texttt{Lines} object and the ID of each of these \texttt{Lines} object should be the file identifier (e.g., m10). 
+
+\Question Plot these \texttt{SpatialLines}. Each \texttt{Lines} object  should be in a different colour.
+
+\end{Exercise}
+
+\begin{Exercise}
+Create a \texttt{SpatialLinesDataFrame} with the \texttt{SpatialLines} object created in the previous exercise.
+
+\Question Make a \texttt{SpatialLinesDataFrame} from the \texttt{SpatialLines} object we've created in the previous examples. For the attributes, use the mean column values from each json file (e.g. \texttt{mean(slocum10\$amphr)}). In particular, use the  columns amphr and vacuum.
+
+\Question Plot the \texttt{SpatialLinesDataFrame} object and use the column amphr to display different colours.
+
+\Question Overlay on this plot, a plot of the \texttt{SpatialPointsDataFrame} that use a different colour for each json file.
+
+\end{Exercise}
+
+\end{document}  
