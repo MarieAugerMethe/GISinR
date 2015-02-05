@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{hyperref}
 \usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+\usepackage{exercise}
 
 % For tilde
 \usepackage{xspace}
@@ -32,12 +33,6 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 
 \large
 \section{\texttt{Spatial} class}
-
-Maybe show how lattice works based by showing a series of plots with different years of tagging
-
-LOOK AT gmap
-Look at ggplot2 projections
-ARE OBJECT FROM map S4 class object
 
 %%%%%%%%%%%
 
@@ -300,19 +295,19 @@ length(slot(sealsSpLdf,"lines"))
 
 So what you can retain here is that you should do as many \texttt{Lines} as you want to have separated entities.
 
+\begin{Exercise}
 
-<<>>=
-#> bubble(df2, "z1", key.space = "bottom")
-# FOR size
-#> spplot(df2, "z1", key.space = "bottom")
-# # We can plot it and assign different coulors to the different Lines
-# plot(sealsSpL, col=c("red","purple","orange"))
-# # with a box around the plot
-# box()
-# # Add a bit of canada to give you a reference point
-# map("world", region="Canada", add=TRUE)
-# # These animals are moving from Sable Island at sea and back.
-@
+Import the waveglider.csv file, which is a modified version of the wg\_m42\_waveglider.csv found on the OTN Ocean Glidders and Marine Observation website (\url{http://gliders.oceantrack.org/ajax/waveglider/}), see main page for more information (\url{http://gliders.oceantrack.org}). Create a \texttt{SpatialLinesDataFrame} with this file. Make one \texttt{Lines} per day. You can use the day column to help you with this. Don't forget to order the rows by time. Note that in this case the time is inseconds since Jan 1 1970 00:00 UTC. So to create a correct \texttt{R} date time object, use: \texttt{as.POSIXct(waveglider\$time, origin="1970-01-01")}.
 
+\end{Exercise}
+
+\begin{Exercise}
+Plot this \texttt{SpatialLinesDataFrame}. Use different colours for each day.
+\end{Exercise}
+
+\section{\texttt{SpatialPolygons}}
+
+
+Polygon from the bbox.
 
 \end{document}
