@@ -36,23 +36,23 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 
 %%%%%%%%%%%
 
-Today will investigate two new classes of \texttt{Spatial} objects: \texttt{SpatialLines} and \texttt{SpatialPolygons}. Both of these classes are more complex than the \texttt{SpatialPoints} class we investigated during the last tutorial. First we will explore the slots associated with these objects. Remember that slots are the important component of the object. To get the slots of an class, you can use the function \texttt{getSlots}.
+We will investigate two new classes of \texttt{Spatial} objects: \texttt{SpatialLines} and \texttt{SpatialPolygons}. Both of these classes are more complex than the \texttt{SpatialPoints} class we investigated during the last tutorial. First we will explore the slots associated with these objects. Remember that slots represents the important components of an object. To identify the slots of an object class, you can use the function \texttt{getSlots}.
 
 <<SpatialClass>>=
-# The are all object associated with the sp package
+# Just like SpatialPoints, SpatialLines and SpatialPolygons are object classes associated with the sp package
 library(sp)
-# Get slots of SpatialPoints
+# Get the slots of SpatialPoints
 getSlots("SpatialPoints")
-# Get slots of SpatialLines
+# Get the slots of SpatialLines
 getSlots("SpatialLines")
-# Get slots of SpatialPolygons
+# Get the slots of SpatialPolygons
 getSlots("SpatialPolygons")
 @
 
-We can note here that the SpatialPoints need the slots: \texttt{coords} with the coordinates of each points, \texttt{bbox} with the bounding box (extent) of the points, and \texttt{proj4sting} which has the coordinate reference system (CRS). While both the \texttt{SpatialLines} and \texttt{SpatialPolygons} use the \texttt{bbox} and \texttt{proj4string} just like the \texttt{SpatialPoints}, they do not use \texttt{coords} slots and instead use \texttt{lines} and \texttt{polygons}. These two slots are in fact list of objects of class \texttt{Line} and \texttt{Polygon}.  
+We can note here that a \texttt{SpatialPoints} object has three slots: \texttt{coords} with the coordinates of each points, \texttt{bbox} with the bounding box (extent) of the points, and \texttt{proj4sting} with the coordinate reference system (CRS). While \texttt{SpatialLines} and \texttt{SpatialPolygons} have the \texttt{bbox} and \texttt{proj4string} slots just like \texttt{SpatialPoints}, they do not have the \texttt{coords} slot. Instead, \texttt{SpatialLines} and \texttt{SpatialPolygons} use the \texttt{lines} and \texttt{polygons} slots. These two slots are in fact lists of objects of class \texttt{Lines} and \texttt{Polygons}. Let's investigate the slots of \texttt{Lines} and \texttt{Polygons}.
 
 <<linespolygons>>=
-# Note that both these have slots that are lists.
+# Note that both these object classes have slots that are lists.
 
 # Get the slots of Lines
 getSlots("Lines")
@@ -60,7 +60,8 @@ getSlots("Lines")
 getSlots("Polygons")
 @
 
-The lists will take a list of object of class Line or Polygon, and each of the Line and Polygon in the list will need to be associated with an ID in the ID slot. The very basis of the \texttt{SpatialLines} and \texttt{SpatialPolygons} are the class \texttt{Line} and \texttt{Polygon}, which as we can see below are the class that have a slot for coordinates.
+As we can see, the \texttt{Lines} and \texttt{Polygons} objects also have a slot for lists. These slots take a list of objects of class \texttt{Line} or \texttt{Polygon}. \texttt{Lines} and \texttt{Polygons} also have an \texttt{ID} slot. This slot can only take a single character value. In the case of \texttt{Lines}, this ID connects all the \texttt{Line} objects that are in a \texttt{Lines} object with a single indentifier. Let's investigate the slots on \texttt{Line} and \texttt{Polygon}.
+
 
 <<LinePolygon>>=
 # Look at the slots of the fundamental class for SpatialLines
@@ -70,28 +71,35 @@ getSlots("Polygon")
 # Note that both have the coords slot
 @
 
+The very basis of the \texttt{SpatialLines} and \texttt{SpatialPolygons} are the class \texttt{Line} and \texttt{Polygon}, which as we can see above are the classes that have a slot for coordinates. While \texttt{Line} and \texttt{Polygon} have the coordinates (\texttt{coords}), only \texttt{SpatialLines} and \texttt{SpatialPolygons} have the \texttt{bbox} and the \texttt{proj4string} slots.
 
 \subsection{\texttt{SpatialLines}}
 
-Here we are going to create a \texttt{SpatialLines} object based on the location of a grey seal. The data used here is the a subset of the data published in Lidgard et al. (2014), that was shared for educational purposes by the researchers of the Ocean Tracking Network (OTN) Canada Sable Island Grey Seal Bioprobes project (\url{http://members.oceantrack.org/data/discovery/SGS.htm}). Just to use the simplest example possible, we will make a \texttt{SpatialLines} object with only one seal.
+\subsubsection{One movement path}
+
+Here we are going to create a \texttt{SpatialLines} object based on the locations of grey seals from Sable Island, Nova Scotia. The data used here is a subset of the data published in Lidgard et al. (2014) and was shared for educational purposes by the researchers of the Ocean Tracking Network (OTN) Canada Sable Island Grey Seal Bioprobes project (\url{http://members.oceantrack.org/data/discovery/SGS.htm}). To start with the simplest example possible, we will make a \texttt{SpatialLines} object with the data from only one of the seals.
 
 <<seal1>>=
 # Read files with movement data
 sealMov <- read.csv("Seal3_169_2_01_1.csv")
-# Let's look at the first column to get a sense of what's in the file
+# Let's look at the first rows to get a sense of what's in the file
 head(sealMov)
 # How many seals do we have and what's their ID
 unique(sealMov$SealID)
-# Get only the points for seal 66486
+# Let's focuss on seal 66486, drop the locations from all other seals
 seal1 <- subset(sealMov, SealID == 66486 ,drop=TRUE)
 @
 
-Now we want to order the locations of the seal by date, so when we connect the points with lines they are ordered to represent the movement of the animal. To do this we will use the \texttt{DateTime} class, which is an important class in R.
+Now we want to order the locations of the seal by date, so when we connect the points with lines they are ordered to represent the movement of the animal. To do this, we will use one of the Date-Time classes, which are important base classes in \texttt{R}.
 
 <<OrderingDate>>=
-# The class of the date column is factor, which is not great for ordeing dates
+# The current class of the date column is factor, which is not great for ordering dates
 class(seal1$Date)
-# Make the date time into a POSIXlt class, which is a basic class for date and time in R. This class understand how time should be ordered. You need to specify the format of the data and the time zone (which we are assuming is UTC), see ?POSIXlt
+# We will transform this column to a POSIXlt class, which is a base Date-Time class in R. This class understand how time should be ordered (e.g., year before month). To use POSIXlt, you need to specify the date format and the time zone (which we are assuming is UTC), see ?POSIXlt
+
+# To see how the date is formated currently, let's look at the Date column
+seal1$Date[1]
+# Looks like Day.Month.Year Hour:Minute:Second
 seal1$Date <- as.POSIXlt(seal1$Date, format="%d.%m.%y %H:%M:%S", zone="UTC")
 # Now the class is POSIXlt
 class(seal1$Date)
@@ -99,12 +107,12 @@ class(seal1$Date)
 seal1 <- seal1[order(seal1$Date),]
 @
 
-Now, we will create a \texttt{SpatialPointsDataFrame} object based on the location of the seal like we did in the last tutorial. 
+Now, we will create a \texttt{SpatialPointsDataFrame} object based on the locations of the seal like. We will use one of the method we discussed in the last tutorial. 
 
 <<sealSpPoint>>=
-# We can create a SpatialPointsDataFrame by assigning the coordinates
+# Create a SpatialPointsDataFrame by assigning the coordinates
 coordinates(seal1) <- ~Lon + Lat
-# We then assign the geographic CRS, which we are assuming is WGS84
+# Assign the geographic CRS, which we are assuming is WGS84
 proj4string(seal1) <- CRS("+proj=longlat +datum=WGS84")
 # Now we have a SpatialPointsDataFrame object
 class(seal1)
@@ -113,7 +121,7 @@ class(seal1)
 Now we will create a \texttt{Line} using the \texttt{SpatialPointsDataFrame}.
 
 <<sealLine>>=
-# Creat a Line object
+# Create a Line object
 seal1L <- Line(seal1)
 # Now the class is Line
 class(seal1L)
@@ -123,7 +131,7 @@ plot(seal1L)
 summary(seal1L)
 @
 
-You have noticed that the \texttt{Line} object we just created is not useful in itself. All it does is assess that all of the points are associated with one line. In our case all of the locations of this seal is associated with one movement path. The \texttt{Line} object needs to be incorporated in a \texttt{Lines} object. Note that the \texttt{Lines} object is a list of \texttt{Line} with an associated ID. The \texttt{Lines} object is also of little interest by itself, it's only a building block for the \texttt{SpatialLines}.
+As shown above, the \texttt{Line} object we've created is not useful in itself. All it does is assess that all of the coordinates are associated with one continuous \texttt{Line}. In our case, all of the locations of seal 66486 are associated with one continuous movement path. The \texttt{Line} object gets incorporated in a \texttt{Lines} object. Note that the \texttt{Lines} object is a list of \texttt{Line} objects with one associated ID.
 
 <<sealLines>>=
 # Create a Lines object using a Line
@@ -132,11 +140,16 @@ seal1Ls <- Lines(seal1L, ID="seal1")
 plot(seal1Ls)
 # And the info is not that interesting
 summary(seal1Ls)
-# But let's create a SpatialLines object with this Lines object. Note that to make SpatialLines you need a list of Lines
+@
+
+The \texttt{Lines} object is also of little interest by itself, it's only a building block for the \texttt{SpatialLines}.
+
+<<sealSpLines>>=
+# Create a SpatialLines object with the Lines object. Note that to make SpatialLines you need a list of Lines, not just one Lines object
 seal1SpL <- SpatialLines(list(seal1Ls))
 # Now we finnally have a Spatial object that can be plotted
 plot(seal1SpL)
-# Let's add the points
+# Let's add the location points
 plot(seal1, add=TRUE, pch=19, cex=0.5)
 # and a box around the plot
 box()
@@ -160,60 +173,67 @@ seal1SpL2 <- SpatialLines(list(Lines(Line(seal1), ID="seal1")),
 identical(seal1SpL, seal1SpL2)
 @
 
-An even quicker way to create a \texttt{SpatialLines} from a\texttt{SpatialPointsDataFrame} is to use \texttt{as}.
+An even quicker way to create a \texttt{SpatialLines} from a \texttt{SpatialPointsDataFrame} is to use \texttt{as}.
 
 <<SpPsSpLs>>=
 # Creating a SpatialLines from the seal1 SpatialPoints object supper quickly.
 seal1SpL3 <- as(seal1, "SpatialLines")
 # This will not be exactly the same
 identical(seal1SpL, seal1SpL3)
-# The only difference here is that sealSpL3 that we just created has the defaut ID "ID", if we create a new SpatialLines but name the ID as "ID" they are going to be identical.
+# The only difference here is that sealSpL3 that we've just created has the defaut ID value: "ID". If we create a new SpatialLines using the Lines and Line functions and use "ID" for the ID, this new object will be exactly the same as seal1SpL3.
 seal1SpL4 <- SpatialLines(list(Lines(Line(seal1), ID="ID")), 
                           proj4string=CRS(proj4string(seal1)))
 identical(seal1SpL3, seal1SpL4)
 @
 
-So in our first example, we only had one continous movement path, but we might want a \texttt{SpatialLines} object with multiple paths. For example, we might want to have one\texttt{SpatialLines} object with the movement path of the three seals in our sealMov \texttt{data.frame}. In the first case, we would like to have each path to be a different \texttt{Lines} object with a different ID representing the seal ID. So for this we will need to create a \texttt{Lines} object for each seal. 
+\subsubsection{Three movement paths}
+
+In our first example, we only had one continous movement path. However, we might want a \texttt{SpatialLines} object with multiple movement paths. For example, we might want to have one \texttt{SpatialLines} object with the movement path of the three seals in our sealMov \texttt{data.frame}. To start, we would like to have each path to be a different \texttt{Lines} object with a different ID representing the seal ID. For this, we will need to create a \texttt{Lines} object with the coordinates of each seal. 
 
 <<seal2Lines>>=
-# Before we create the line objects we would like to order the sealMov based on indibidual and then on time, so we need to make the date column a POSIXlt object. See above for further explanation.
+# Before we create the line objects we would like to order the sealMov based on individual and then on time. Thus, we need to make the date column a POSIXlt object. See above for further explanation.
 sealMov$Date <- as.POSIXlt(sealMov$Date, format="%d.%m.%y %H:%M:%S", zone="UTC")
-# We will select the row by sealID below, so we only need to order it by dates followed by date, use order
+# We will select the row by sealID below, so we only need to order it by dates
 sealMovD <- sealMov[order(sealMov$Date),]
-# Check the first rows, now date are in order but SealID is mixed
+# Check the first rows, now dates are in order but seal IDs are mixed
 head(sealMovD)
 
-# So we want to create a Lines obeject for the data points associated with each seal, so if we did it for one seal, e.g.: SealID: 66506, we could do it
+# We want to create a Lines object with the data points associated with each seal. 
+
+#If we did it for one seal, e.g.: SealID: 66506, we could do it as follow:
 seal2Ls <- Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 66506)
-# So this is a Lines object
-class(seal2Ls)
 @
 
-To most efficient way to do a \texttt{Lines} for each seal, is through \texttt{lapply}. \texttt{lapply} is a base function in \texttt{R} that applies a function repeatly to object. There are many such function and \texttt{lapply} returns a list. Here is a few very easy examples of \texttt{lapply}.
+To most efficient way to do a \texttt{Lines} object for each seal, is through \texttt{lapply}. \texttt{lapply} is a base function in \texttt{R} that applies a function repeatly to an object. There are many such functions in \texttt{R}. \texttt{lapply} returns a list. Here is a few very easy examples of how to use \texttt{lapply}.
 
 <<lapplyeg>>=
-# To familiarize yourself with lapply, we going to apply it to a simple function
+# Apply lapply to a simple function
+
 # Create a matrix
 oo <- matrix(1:3,nrow=3)
 # Just a column with value 1-3
 oo
-# Here we make an lapply function that adds 1 to the value each each row of oo
+# Use lapply with a function that adds 1 to the value of each row of oo
 lapply(oo, function(x){x+1})
-# You could do something more complicated that use two different object. E.g., let's create new matrix
+# You could do something more complicated that use two different object. E.g., let's a create new matrix
 aa <- matrix(1:6, nrow=3)
-# Just a matrix with value from 1-6 in two columns
+# It's a matrix with value from 1-6 in two columns
 aa
-# Now we want to do the mean of each row using lapply. We use oo as the row index, as in if oo is 1 we do mean(aa[1,]).
+# Now we want to do the mean of each row using lapply. We use oo as the row index, as in:
+
+# if oo is 1, do mean(aa[1,])
 lapply(oo, function(x){mean(aa[x,])})
 @
 
-Now we will use \texttt{lapply} to do a list of \texttt{Lines}. We are going to use the SealID as our index and create one \texttt{Lines} per seal.
+Now we will use \texttt{lapply} to do a list of \texttt{Lines}. We are going to use the SealID as our index and create one \texttt{Lines} object per seal.
 
 <<3sealLines>>=
-# Get the id of the 3 seals
+# Get the ID of the 3 seals
 sealIndex <- unique(sealMovD$SealID)
 sealIndex
-# now use the lapply on the code we described above: Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 66506) 
+# now use the lapply on the code we described above: Lines(Line(sealMovD[sealMovD$SealID == 66506, c("Lon","Lat")]), ID = 66506)
+
+# Note that the ID of each Lines object is the seal ID
 sealsLs <- lapply(sealIndex, 
        function(x){Lines(Line(sealMovD[sealMovD$SealID == x, c("Lon","Lat")]), ID = x)})
 # We should get a list back
@@ -232,56 +252,52 @@ sealsSpL <- SpatialLines(sealsLs,
 plot(sealsSpL, col=c("red","purple","orange"))
 # with a box around the plot
 box()
-# Add a bit of canada to give you a reference point
-map("world", region="Canada", add=TRUE)
-# These animals are moving from Sable Island at sea and back.
 @
 
 In the last tutorial, I showed how \texttt{SpatialPoints} had an analogue with attributes called \texttt{SpatialPointsDataFrame}. We can also create a \texttt{SpatialLinesDataFrame} from a \texttt{SpatialLines} object. Here we are going to add attributes to the seal movement paths.
 
 
 <<SpLDF>>=
-# We are going to create a data.frame with some attribute to add to each seal. This is a completely inveted example and I'm going to assign arbitrary value to each seal that represents, let say, their let's say age and one with weight
+# We are going to create a data.frame with 2 columns to add as attributes to each seal. This is invented data; I'm going to assign arbitrary values to each seal that represents their age and weight
 sealAtt <- as.data.frame(cbind(age=c(1.2,3,3.2), weight=c(110, 126, 156)))
-# We match the attribute based on ID and we need to assign the ID as the row name of our datae frame
+# We match the attributes based on ID and we need to assign the ID as the row name of our data.frame
 rownames(sealAtt) <- sealIndex
 # Now we can create the SpatialLinesDataFrame
 sealsSpLdf <- SpatialLinesDataFrame(sealsSpL,data=sealAtt)
 # Info
 summary(sealsSpLdf)
-# Now you could plot the Lines based on their value, based on their weight
+# Now you could plot the Lines and color them based on the values of the attributes, e.g. based on their weight
 spplot(sealsSpLdf, zcol="weight")
 @
 
-Note that we have been putting one \texttt{Line} object per \texttt{Lines} object. However, a \texttt{Lines} object can contain multiple \texttt{Line}, as long as these can be associated with a single ID. I'm not sure when this would be useful, but one example I could think of was if you had a movement path that was disconnected. For example, if you had multiple foraging trips for one individual. Here I'm only going to show you how this work by putting all 3 seal as one \texttt{Lines} rather than one \texttt{Lines} per individual.
+Note that we have been putting one \texttt{Line} object per \texttt{Lines} object. However, a \texttt{Lines} object can contain multiple \texttt{Line} objects, as long as these can be associated with a single ID. I'm not sure when this would be useful, but one example I could think of, is if you had a movement path that was disconnected. For example, if you had multiple foraging trips for one individual. Here I'm only going to show you how this work by putting all three seals as one \texttt{Lines} objects rather than as one \texttt{Lines} object per individual.
 
 
 <<allsealsSPLine>>=
-# This is a bit of an artificial example
-# The big difference here is that we are using one Lines for all 3 seals, so here we use sapply only to create a list of Line object not Lines object
+# The big difference here is that we are using 1 Lines for all 3 seals. Thus, we use sapply to create a list of Line objects (as opposed to a list of Lines objects)
 sealsL <- lapply(sealIndex, 
        function(x){Line(sealMovD[sealMovD$SealID == x, c("Lon","Lat")])})
 # We should get a list back
 class(sealsL)
 # And now the elements of this list should be a Line object
 class(sealsL[[1]])
-# compare to the sealsLs that we created above
+# compare to Lines associated with the sealsLs that we created above
 class(sealsLs[[1]])
-# If we create a Lines object with the 3 Line, we won't be able to assign to each Line the seal ID, we will need to give it only one ID which groups the 3 Line, here just "OTN seals".
+# If we create a Lines object with the 3 Line objects, we won't be able to assign to each Line the seal ID, we will need to give it only one ID which groups the 3 Line, here just "OTN seals".
 sealsLs2 <- Lines(sealsL, ID="OTN seals")
 # You can try to put 3 IDs put it won't work
 sealsLs3 <- Lines(sealsL, ID=sealIndex)
 # Now we can make a SpatialLines from the new Lines object we have created, remember that SpatialLines needs a list of Lines
 sealsSpL2 <- SpatialLines(list(sealsLs2), proj4string=CRS(proj4string(seal1)))
-# We can plot this object, but assigning color is not going to work teh same, only the first color is going to be used because all of these 3 movement path are group together under one ID.
+# We can plot this object, but assigning colour is not going to work in the same way. Only the first colour is going to be used because all of these 3 movement paths are group together under one ID.
 plot(sealsSpL2, col=c("red","purple","orange"))
 box()
 @
 
-However, the disadvantage here is that we can only assign a set of attribute for the three seals at the same time. We can't differentiate between them. That's becasue you link the attributes to the \texttt{SpatialLines} based on the ID slot, which is only attributed to the \texttt{Lines}, not the \texttt{Line}. the example below demonstrate the points.
+The disadvantage here is that we can only assign one set of attributes for the three seals at the same time. We can't differentiate between them. That's because you link the attributes to the \texttt{SpatialLines} based on the ID slot, which is only attributed to the \texttt{Lines}, not the \texttt{Line}. This is demonstrated in the example below.
 
 <<linesfor3seal>>=
-# We can link data.frame we have created above
+# We can't link data.frame we have created above
 sealsSpLdf2 <- SpatialLinesDataFrame(sealsSpL2, data=sealAtt)
 # Even if we say to match it without the ID names
 sealsSpLdf2 <- SpatialLinesDataFrame(sealsSpL2, data=sealAtt, match.ID=FALSE)
@@ -293,11 +309,11 @@ length(slot(sealsSpLdf2,"lines"))
 length(slot(sealsSpLdf,"lines"))
 @
 
-So what you can retain here is that you should do as many \texttt{Lines} as you want to have separated entities.
+So what you should gather from this, is that you should create a \texttt{Lines} object for all the entities you're interested in separating or that you'll need to associate with attributes.
 
 \begin{Exercise}
 
-Import the waveglider.csv file, which is a modified version of the wg\_m42\_waveglider.csv found on the OTN Ocean Glidders and Marine Observation website (\url{http://gliders.oceantrack.org/ajax/waveglider/}), see main page for more information (\url{http://gliders.oceantrack.org}). Create a \texttt{SpatialLinesDataFrame} with this file. Make one \texttt{Lines} per day. You can use the day column to help you with this. Don't forget to order the rows by time. Note that in this case the time is inseconds since Jan 1 1970 00:00 UTC. So to create a correct \texttt{R} date time object, use: \texttt{as.POSIXct(waveglider\$time, origin="1970-01-01")}.
+Import the waveglider.csv file, which is a modified version of the wg\_m42\_waveglider.csv found on the OTN Ocean Glidders and Marine Observation website (\url{http://gliders.oceantrack.org/ajax/waveglider/}), see main page for more information (\url{http://gliders.oceantrack.org}). Create a \texttt{SpatialLinesDataFrame} with this file. Make one \texttt{Lines} per day. You can use the day column to help you with this. Don't forget to order the rows by time. Note that in this case the time is in seconds since Jan 1 1970 00:00 UTC. To create a correct \texttt{R} date time object, use: \texttt{as.POSIXct(waveglider\$time, origin="1970-01-01")}.
 
 \end{Exercise}
 
