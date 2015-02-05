@@ -73,7 +73,7 @@ getSlots("Polygon")
 
 \subsection{\texttt{SpatialLines}}
 
-Here we are going to create a \texttt{SpatialLines} object based on the location of a grey seal. The data used here is the data from REFERENCE HERE. Just to use the simplest example possible, we will make a \texttt{SpatialLines} object with only one seal.
+Here we are going to create a \texttt{SpatialLines} object based on the location of a grey seal. The data used here is the a subset of the data published in Lidgard et al. (2014), that was shared for educational purposes by the researchers of the Ocean Tracking Network (OTN) Canada Sable Island Grey Seal Bioprobes project (\url{http://members.oceantrack.org/data/discovery/SGS.htm}). Just to use the simplest example possible, we will make a \texttt{SpatialLines} object with only one seal.
 
 <<seal1>>=
 # Read files with movement data
@@ -305,9 +305,10 @@ Import the waveglider.csv file, which is a modified version of the wg\_m42\_wave
 Plot this \texttt{SpatialLinesDataFrame}. Use different colours for each day.
 \end{Exercise}
 
-\section{\texttt{SpatialPolygons}}
+%\section{\texttt{SpatialPolygons}}
+%Polygon from the bbox.
 
-
-Polygon from the bbox.
+\section{References}
+Lidgard DC, Bowen WD, Jonsen ID, Iverson SJ (2014) Predator-borne acoustic transceivers and GPS tracking reveal spatial and temporal patterns of encounters with acoustically-tagged fish in the open ocean. Mar Ecol Prog Ser 501:157-168
 
 \end{document}
