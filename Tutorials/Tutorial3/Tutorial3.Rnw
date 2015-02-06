@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+\usepackage{exercise}
+
+% For tilde
+\usepackage{xspace}
+\newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
+
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hooks
+% Hook for tilde
+<<setup, include=FALSE>>=
+library(knitr)
+hook_source = knit_hooks$get('source')
+knit_hooks$set(source = function(x, options) {
+  txt = hook_source(x, options)
+  # extend the default source hook
+  gsub('~', '\\\\mytilde', txt)
+})
+@
+<<setupOp, include=FALSE>>=
+opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
+               tidy.opts=list(blank=FALSE, width.cutoff=52),
+               size="large")
+@
+
+\author{Marie Auger-M\'eth\'e}
+\title{GIS in R: Tutorial 3}
+\date{}
+\maketitle
+
+\large
+
+\section{\texttt{SpatialPolygons}}
+
+
+
+
+\end{document}
