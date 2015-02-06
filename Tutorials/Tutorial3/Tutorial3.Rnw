@@ -139,8 +139,9 @@ plot(wC, add=TRUE)
 plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
 @
 
+\subsection{Holes in polygons}
 
-
+\texttt{R} is not a true GIS and does not represent polygons by their topology. Instead the package \texttt{sp} deals with polyons with holes by marking polygons as hole by using the \texttt{hole} slot and the ring direction (clockwise for nonholes, and anto-clokwise for holes).
 
 MAYEB USE RIVER FROM MAPDATA PACKAGES SINCE THOSE ARE SALMONS.
 
