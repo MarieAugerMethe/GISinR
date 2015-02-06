@@ -15,7 +15,7 @@
 % They all tried to use the lapply code line on a SpatialPoints and got into problems.
 % Maybe change the lappy example so it uses the SpatialPoints instead of the data.frame 
 % and use the coordinates() function, instead of using the lat lon column.
-% Also remove duplicate time in the waveglider data.
+% Fix the waveglider data, for some reason the dates dropped significant digites and so the time is rounded of and has duplicates.
 % Also reformulate the question to say what should be added in the SpatialLinesDataFrame attributes.
 
 \begin{document}
