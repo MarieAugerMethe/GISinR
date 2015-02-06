@@ -3,9 +3,16 @@
 \usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
 \usepackage{exercise}
 
+% For formating of R code
+%\newcommand{\SpatialPolygons}{\texttt{SpatialPolygons}}
+%\newcommand{\Polygons}{\texttt{Polygons}}
+%\newcommand{\Polygon}{\texttt{Polygon}}
+%\newcommand{\SpatialLines}{\texttt{SpatialLines}}
+
 % For tilde
 \usepackage{xspace}
 \newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
+
 
 
 \begin{document}
@@ -33,10 +40,33 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 \maketitle
 
 \large
-
 \section{\texttt{SpatialPolygons}}
+\subsection{Components of \texttt{SpatialPolygons}}
+In the last tutorial with introduced \texttt{SpatialLines} and some of the basic concepts being \texttt{SpatialPolygons}. In particulat, the nesting of classes for polygons are the same as for the lines. The only difference is that \texttt{Polygon} object, the base object to create \texttt{SpatialPolygons}, have more slots:
 
 
+<<compSlots>>=
+library(sp)
+getSlots("Polygon")
+getSlots("Line")
+@
 
+Just like the \texttt{bbox} slot of \texttt{Spatial*} objects, the slots \texttt{labpt}, the label point (centroid of the polygon), \texttt{area}, the area of the polygon in the metric of the coordinates, and \texttt{ringDir}, the ring direction, are generated automatically. However, the slot \texttt{hole} which would be set as NA need more attention. Note that R does not check whether the lines cross or polygons have errors. Unlike other GIS software, the polygon functions do not check with the features are simple. The \texttt{Polygons} class aslo have more slots than the \texttt{Lines}.
+
+<<compSlot2>>=
+getSlots("Polygons")
+getSlots("Lines")
+@
+
+Here again the slots \texttt{labpt} and \texttt{area} are generally generated automatically. The \texttt{labpt} is the centroid of the largest \texttt{Polygon} constituing a \texttt{Polygons} object and the \texttt{area} of a \texttt{Polygons} object is the sum of all \texttt{Polygon} objects it contains. Note that the \texttt{labpt} is useful when we want to label polygons and uses the charater string saved in the \texttt{ID} to label. The slot \texttt{plotOrder} is also usually generated automatically basde on the size of the \texttt{Polygon} object and is the order in which the \texttt{Polygon} should be plotted. Finally, the \texttt{SpatialPolygons} have only one extra slot compared to the \texttt{SpatialLines}.
+
+<<compSlots3>>=
+getSlots("SpatialPolygons")
+getSlots("SpatialLines")
+@
+
+The \texttt{plotOrder} slot only defined how the order in which the \texttt{Polygons} should be plotted and is generally generated automatically based on the size of the \texttt{Polygons}.
+
+MAYBE PUT AN EXAMPLE WITH AN MAINLAND AND ISLAND.
 
 \end{document}
