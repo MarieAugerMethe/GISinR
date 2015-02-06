@@ -7,6 +7,17 @@
 \usepackage{xspace}
 \newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
 
+%%%% Notes to improve the tutorial
+% Notes from after the class:
+% Many had issues with the first exercise because 
+% the when they created a SpatialPoints the columns latitude and longitude became the coordinates 
+% and thus could not be called by the latitude and longitude column name.
+% They all tried to use the lapply code line on a SpatialPoints and got into problems.
+% Maybe change the lappy example so it uses the SpatialPoints instead of the data.frame 
+% and use the coordinates() function, instead of using the lat lon column.
+% Also remove duplicate time in the waveglider data.
+% Also reformulate the question to say what should be added in the SpatialLinesDataFrame attributes.
+
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
