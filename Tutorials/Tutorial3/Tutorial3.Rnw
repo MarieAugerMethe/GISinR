@@ -65,7 +65,89 @@ getSlots("SpatialPolygons")
 getSlots("SpatialLines")
 @
 
-The \texttt{plotOrder} slot only defined how the order in which the \texttt{Polygons} should be plotted and is generally generated automatically based on the size of the \texttt{Polygons}.
+The \texttt{plotOrder} slot only defined how the order in which the \texttt{Polygons} should be plotted and is generally generated automatically based on the size of the \texttt{Polygons}, largest first. Just like a \texttt{SpatialLines} object needs a list of \texttt{Lines} object, the \texttt{SpatialPolygons} take a list of \texttt{Polygons}. Note the just like \texttt{SpatialLines} objects, \texttt{SpatialPolygons} are the level at which the coordinate reference system (CRS) is set. Similarly, just like \texttt{Line} objects, the \texttt{Polygon} object are the level at which the the coordinates are set.
+
+\subsection{Creating \texttt{SpatialPolygons}}
+
+It's rare that you need to create \texttt{SpatialPolygons} from their raw coordinates. You often use polygon data that has already been created, (e.g. maps of the world) or tranform spatial data from another source (e.g., raster to polygon).
+
+We will load a map of Canada that is in a shapefile object saved in the tutorial folder. To impoart a shapefile you need the package \texttt{rgdal}. Note that you'll need all four WestCoast files. 
+
+<<ImportShp>>=
+library(rgdal)
+wC <- readOGR(dsn=".", layer="WestCoast")
+# This already a SpatialPolygonsDataFrame
+class(wC)
+# It already has a CRS
+proj4string(wC)
+@
+
+DISCUSS FURTHER THE IMPORT OF DATA
+
+\subsubsection{\texttt{SpatialPolygons} from \texttt{SpatialPoints}}
+
+However, one case that I find is often useful is when I need to create a \texttt{SpatialPolygons} object to represent the study area on a bigger map. Something, I'll show you how to do here using the Ocean Tracking Network (OTN) Kintama project data (more informationon the project website: \url{http://members.oceantrack.org/data/discovery/KNTM.htm}). The file kintama.csv is a modified version from the file animal.csv found on the OTN public data website (\url{http://members.oceantrack.org/data/discovery/bypublic.htm#K}). First we will create a \texttt{SpatialPointsDataFrame}.
+
+<<spPoints>>=
+# Import data
+kntm <- read.csv("kintama.csv")
+head(kntm)
+# Create a SpatialPointsDataFrame object
+coordinates(kntm) <- ~longitude +latitude
+proj4string(kntm) <- CRS("+proj=longlat +datum=WGS84")
+# Plot the point on the map of Canada
+plot(wC)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+@
+
+While we can see where the points are, a nicer way to just show the study area would be to create a \texttt{SpatialPolygons} that represent the study area. For this we can use the bounding box (\texttt{bbox}) from our \texttt{SpatialPoints}. First we need to get the coordinates of the bounding box
+
+<<bbox>>=
+# Get the bounding box of the Spatialpoints object
+bbox(kntm)
+# We know that the SpatialPolygons should have a points for all combination of these points. You can use expand.grid to do this
+studyA <- expand.grid(long=bbox(kntm)["longitude",],lat=bbox(kntm)["latitude",])
+studyA
+# However, that's not enough. The coordinates should be in order in which you would trace the polygon clockwise. So c(minx, miny), c(minx,maxy), c(maxx, maxy), c(maxx, miny)
+studyA <- studyA[c(1,3,4,2),]
+# The last trick, is that a polygon needs to be a closed line so the first and last locations need to be the same.
+# Here we repeat the first location at the end and bind it with rbind
+studyA <- rbind(studyA,studyA[1,])
+# We can make these SpatialPoints
+coordinates(studyA) <- ~long+lat
+proj4string(studyA) <- proj4string(kntm)
+# Let's plot these
+plot(studyA, col="red", pch=19, cex=0.5)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+plot(wC, add=TRUE)
+box()
+@
+
+Now we can create a \texttt{SpatialPolygons} from the \texttt{SpatialPoints}. We are using the same hierarchy as for the \texttt{SpatialLines}
+
+<<spPoly, fig.width=9, fig.height=4.2>>=
+studyASP <- SpatialPolygons(list(Polygons(list(Polygon(studyA)), ID = "Study site")), proj4string=CRS(proj4string(studyA)))
+# Let's plot it
+layout(matrix(1:2,nrow=1))
+# First panel: zoomed out view
+plot(wC)
+# I'm using rgb to make stranparant colour
+plot(studyASP, border="red", col=rgb(1,0,0,0.5), add=TRUE)
+# Second panel: zoomed in view
+plot(studyASP, border="red")
+plot(wC, add=TRUE)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+@
+
+
+
+
+MAYEB USE RIVER FROM MAPDATA PACKAGES SINCE THOSE ARE SALMONS.
+
+\subsubsection{\texttt{SpatialPolygons} from \texttt{SpatialLines}}
+
+HOME RANGE EXAMPLE?
+
 
 MAYBE PUT AN EXAMPLE WITH AN MAINLAND AND ISLAND.
 
