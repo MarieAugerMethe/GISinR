@@ -141,7 +141,35 @@ plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
 
 \subsection{Holes in polygons}
 
-\texttt{R} is not a true GIS and does not represent polygons by their topology. Instead the package \texttt{sp} deals with polyons with holes by marking polygons as hole by using the \texttt{hole} slot and the ring direction (clockwise for nonholes, and anto-clokwise for holes).
+\texttt{R} is not a true GIS and does not represent polygons by their topology. Instead the package \texttt{sp} deals with polyons with holes by marking polygons as hole by using the \texttt{hole} slot and the ring direction (clockwise for nonholes, represented with 1, and anti-clokwise for holes, represeted with -1.). The specifications of \texttt{SpatialPolygons} in \texttt{sp} are not consistent with those of the Open Geospatial Consortium. The \texttt{rgeos} package does however, adn thus require each hole to be associated with the exterior ring.  To be able to create compatible \texttt{Polygons}, you can use the \texttt{createSPComment} function to associated each \texttt{Polygons} object from the \texttt{SpatialPolyons}. Exterior rings are coded zero, while interior rings are coded with the 1-based index of the exterior ring to which they belong.
+
+Here we will investigate a \texttt{SpatialPolygonsDataFrame} I've created that has a hole in it.
+
+<<hr>>=
+# Read the simulated polygons
+HR <- readOGR(dsn=".", layer="hrSP")
+# Plot the SpatialPolygonsDataFram
+plot(HR, col=rgb(0,0,1))
+# We want to look at each Polygon object. To do this we need to get the Polygons out of the SpatialPolygonsDataFrame.
+HR <- slot(HR,"polygons")[[1]]
+# We then need the list of Polygon objects out of the Polygons
+hr <- slot(HR, "Polygons")
+# Now we can see that there are 2 Polygon objects
+length(hr)
+# The first Polygon is not a hole
+slot(hr[[1]], "hole")
+# So its ring direction is clockwise: 1
+slot(hr[[1]], "ringDir")
+# We can also look at it's area
+slot(hr[[1]], "area")
+# Now we cab look at the secon Polygon. Is it a hole
+slot(hr[[2]], "hole")
+# So its ring should be anticlokwise: -1
+slot(hr[[2]], "ringDir")
+# What's its area, much smaller 
+slot(hr[[2]], "area")
+@
+
 
 MAYEB USE RIVER FROM MAPDATA PACKAGES SINCE THOSE ARE SALMONS.
 
@@ -151,5 +179,109 @@ HOME RANGE EXAMPLE?
 
 
 MAYBE PUT AN EXAMPLE WITH AN MAINLAND AND ISLAND.
+
+\section{Visualisation}
+
+Traditional graphics, done with the function \texttt{plot} are made incrementaly, where graphic elements added with a set of different functions. The \texttt{sp} package provide a tradiational \texttt{plot} function.
+
+Trellis graphics, e.g. those assocaited with the package \texttt{lattice} (and ggplot2?) alllow to plot high-dimensional data by providing conditiong plots, sets of plots with shared axis. The \texttt{sp} package also provide a \texttt{spplot} function that use the trellis system from the lattice package.
+
+\subsection{Traditional plots}
+
+One advantage of plotting a \texttt{Spatial*} object is that the units in the x and y coordinates are of equal length if the data is projected and using a good aspect ratio for geographical coordinate reference system (CRS). Note that this can be adjusted using the \texttt{asp} argument (see \texttt{?asp}). This is in contrast to plotting non spatial objects.
+
+<<plotBase, fig.width=9, fig.height=6>>=
+layout(matrix(1:2,nrow=1))
+#
+plot(kntm, pch=19, cex=0.5)
+plot(wC, add=TRUE)
+title(main="Spatial object")
+# Plot normal object, use coordinates
+plot(coordinates(kntm), pch=19,cex=0.5)
+plot(wC, add=TRUE)
+title(main="Matrix with coordinates")
+@
+
+You can notice a few difference. The plot with the matrix of coordinates looks distorded, but not the plot of the \texttt{Spatial*} object. Another difference is that the \texttt{Spatial*} object doesn't plot the axis automatically, but the plot of the matrix does. To add axis on the a plot of \texttt{Spatial*} object, you can use the argument \texttt{axes}. Some of the \texttt{par} arguments to make changes to the appearance can also be used directly in the \texttt{plot} function, e.g., make the y-axis labels horizontal rather than vertical using \texttt{las}. You can use the function \texttt{axis} to add axis with specific format. Note that you can add axis title using and main graphic title using the function \texttt{title}.
+
+<<axes, fig.width=9, fig.height=8>>=
+layout(matrix(1:4, nrow=2))
+# Plot a spatial object with axes
+plot(kntm, axes=TRUE)
+# Make the y-axis label horizontal
+plot(kntm, axes=TRUE, las=1)
+# Make plot and add x-axis with axis
+plot(kntm)
+# 1 specify that it's the x-axis
+axis(1, at=c(-125,-120))
+# add box
+box()
+# Make a plot and add x-axis with specific label
+plot(kntm)
+# x-axis with specified label and color for ticks
+axis(1, at=c(-125,-120), labels=c("125 W", "120 W"), col.ticks="green")
+# y-axis color for both line and ticks
+axis(2, at=c(46,50), labels=c("46 N", "50 N"), col="red")
+# add title and x-axis title
+title("Using axis()", xlab="Longitude")
+@
+
+Margin size and other ploting parameters can be adjusted for all graphics using the function \texttt{par}. For example, the argument \texttt{mar} can be used to set the margin size in units of height of a line of text. The order of the argument \texttt{mar} is bottom, left, top, and right margins.
+
+
+<<margin, fig.width=9, fig.height=4>>=
+layout(matrix(1:2, nrow=1))
+# plot with original margin
+plot(kntm, axes=TRUE)
+par(mar=c(3,1,1,1))
+plot(kntm, axes=TRUE)
+@
+
+You can add a North arrow and a scale bar
+
+<<NscaleMyLocation>>=
+plot(kntm, axes=TRUE)
+box()
+SpatialPolygonsRescale(layout.north.arrow(),offset=c(-118, 49.8), plot.grid=FALSE)
+SpatialPolygonsRescale(layout.scale.bar(), offset = c(-127,45.2), fill = c("transparent", "black"), plot.grid = FALSE)
+# add the value for scale
+text(x=-126.9,y=45.6, "0 ")
+text(x=-125.9,y=45.6, expression(1*degree))
+# You can use the locator to choose the location, (uncomment the code below)
+
+#SpatialPolygonsRescale(layout.north.arrow(),offset=locator(1), plot.grid=FALSE)
+
+#SpatialPolygonsRescale(layout.scale.bar(), offset = locator(1), fill = c("transparent", "black"), plot.grid = FALSE)
+
+#text(locator(1), "0")
+
+#text(locator(1), expression(1*degree))
+
+@
+
+To add grid lines, you can use the function \texttt{gridlines}.
+# This is not so great see p. 83
+<<gridLines>>=
+plot(kntm,axes=TRUE, las=1)
+# Create a SptialLines object for the Spatial object you interested in
+kntmGrid <- gridlines(kntm, easts=seq(-140,-110, by=1), norths=seq(44,60,by=1))
+kntmGrida <- gridat(kntm, easts=seq(-140,-110, by=1), norths=seq(44,60,by=1))
+class(kntmGrid)
+plot(kntmGrida, add=TRUE, lty=2, col="grey")
+box()
+@
+
+
+Multiple \texttt{Spatial*} objects can be added to a plot using the argument \texttt{add=TRUE}. This can be thought as the equivalent of adding layers on top of the orginal layer. By default the plot will be to the extent of the first layer plotted. An alternative method is to use the function \texttt{points} to add {SpatialPoints} objects or \texttt{lines} to add \texttt{SpatialLines}.
+
+<<plotBase2>>=
+layout(matrix(1:2,nrow=1))
+plot(wC)
+plot(kntm, add=TRUE, col="blue")
+# An alternative, the default points are different
+plot(wC)
+points(kntm, col="blue")
+@
+
 
 \end{document}
