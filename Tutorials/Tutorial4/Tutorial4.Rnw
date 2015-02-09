@@ -49,6 +49,17 @@ SPobj2
 clipSPobj1 <- SPobj1[SPobj2,]
 @
 
+Maybe do it by clipping the rivers available in the study area of Kintama example.
+Talk about over, how it gives the attributes from the for the object2, instead of obj1.
+
+<<over>>=
+sel <- over(stations, lnd)
+head(sel,15)
+names(lnd)
+names(stations)
+summary(sel)
+
+@
 
 
 \end{document}
