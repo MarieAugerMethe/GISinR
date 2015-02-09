@@ -1,0 +1,39 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\usepackage{hyperref}
+\usepackage{exercise}
+
+\title{Assignment 3}
+\author{Marie Auger-M\'eth\'e}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+Please send me before next class (Feb 12) an e-mail with all the answers for this assignment. All \texttt{R} code should be in one script. Please indicate which lines are associated with each exercise by including comments in your code. In addition, send me a copy of the figures in your e-mail. You can save the figures in .pdf or .jpeg format.
+
+\begin{Exercise}
+
+Create one \texttt{SpatialPolgons} object identifying the study area from the Deployments.csv file from the Ocean Tracking Network (OTN) Arctic Cumberland Sound Array project data found at \url{http://members.oceantrack.org/data/discovery/ACS.htm}. This is the same file you used in assignment 1.
+
+\Question
+Import the deployment.csv  and create a \texttt{SpatialPointsDataFrame} with it.
+
+\Question Use the \texttt{bbox} function to  identify the spatial extent of this \texttt{SpatialPointsDataFrame} and create a matrix or data frame with the coordinates of the study area. See tutorial for an example on how to do this.
+
+\Question Use these coordinates to create a \texttt{SpatialPolygons}.
+
+\end{Exercise}
+
+\begin{Exercise}
+
+\Question Plot the \texttt{SpatialPolygons} create in the previous exercise. Plot the axes and make sure the y-axis is horizontal.
+
+\Question Add a map of Canada (again see assignment 1). 
+
+\Question Add \texttt{SpatialPointsDataFrame} created in the previous exercise.
+
+\Question Add a North arrow.
+
+\end{Exercise}
+\end{document}  
