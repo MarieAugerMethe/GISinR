@@ -18,6 +18,8 @@
 % Fix the waveglider data, for some reason the dates dropped significant digites and so the time is rounded of and has duplicates.
 % Also reformulate the question to say what should be added in the SpatialLinesDataFrame attributes.
 
+% Maybe add the join based on the plyr example, see the lovelace tutorial. Could also do this with points
+
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
