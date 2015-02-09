@@ -40,7 +40,20 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 \large
 \section{Extracting informatiom}
 
+I've included the Northwest Atalantic Fisheries Organization (NAFO) divisions shapefile, which I found on the NAFO website at \ulr{http://www.nafo.int/data/frames/data.html}. 
+
+<<NAFOZone>>=
+library(rgdal)
+NAFO <- readOGR(".", "Divisions")
+# Note that they use NAD83 as a geographic CRS
+proj4string(NAFO)
+plot(NAFO)
+@
+
+
 Clipping, simply by subseting.
+
+
 
 <<>>=
 SPobj1
@@ -61,5 +74,10 @@ summary(sel)
 
 @
 
+Use aggregate length with spatialpoints to get at the number of points in a polygon
+
+<<Aggregate>>=
+
+@
 
 \end{document}
