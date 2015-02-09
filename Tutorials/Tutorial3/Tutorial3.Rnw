@@ -91,6 +91,7 @@ However, one case that I find is often useful is when I need to create a \texttt
 <<spPoints>>=
 # Import data
 kntm <- read.csv("kintama.csv")
+kntm <- unique(kntm)
 head(kntm)
 # Create a SpatialPointsDataFrame object
 coordinates(kntm) <- ~longitude +latitude
@@ -260,7 +261,7 @@ text(x=-125.9,y=45.6, expression(1*degree))
 @
 
 To add grid lines, you can use the function \texttt{gridlines}.
-# This is not so great see p. 83
+This is not so great see p. 83
 <<gridLines>>=
 plot(kntm,axes=TRUE, las=1)
 # Create a SptialLines object for the Spatial object you interested in
@@ -283,5 +284,67 @@ plot(wC)
 points(kntm, col="blue")
 @
 
+The geographical area that is plotted in a plot of a \texttt{Spatial} object  is by default the area of data extended by a minimum of 4\% margin of each side. You can contorl how much you are zoomed in by using the argument \texttt{xlim} and \texttt{ylim}.
+
+<<zoom, fig.width=9, fig.height=8>>=
+layout(matrix(1:4,nrow=2))
+# Original
+plot(kntm, axes=TRUE, las=1)
+plot(wC, add=TRUE)
+# Zoom in
+plot(kntm, axes=TRUE, xlim=c(-126,-119), ylim=c(45,47), las=1)
+plot(wC, add=TRUE)
+# Zoom out
+plot(kntm, axes=TRUE, xlim=c(-160,-120), ylim=c(40,60), las=1)
+plot(wC, add=TRUE)
+@
+
+As you might noticed this is not perfect and that's because the geographical margin are partly fixed by  plot size. You can change the plot size using the \texttt{par} function. 
+Not sure how great that part is. Maybe put the table on p. 68.
+
+<<plotsize>>=
+# To set own zoom
+pin <- c(1,1) # Size in inches
+xx <- c(-160,-120)
+yy <- c(40,55)
+ratio <- diff(xx)/diff(yy)
+par(pin = c(ratio * pin[2], pin[2]), xaxs = "i", yaxs = "i")
+plot(kntm, axes=TRUE, xlim=xx, ylim=yy, las=1)
+plot(wC, add=TRUE)
+@
+
+Often what is of interest is to plot the attributes, for example the salmon species of the Kintama projetc.
+
+<<att, fig.width=9, fig.height=4>>=
+layout(matrix(1:2,nrow=1))
+# Look at salmon species
+salmonSp <- unique(kntm$scientificname, drop=TRUE)
+# These are class factor which is great, as the numbers will be 
+class(salmonSp)
+# how many species
+length(salmonSp)
+# Choose colours
+salCol <- c("blue", "red", "yellow", "green", "purple")
+# change color
+plot(kntm, axes=TRUE, las=1, pch =19, col =salCol[kntm$scientificname],
+     cex=0.5)
+# we don't see mykiss becasue it's under other dots
+plot(wC, add=TRUE)
+# Add lengend
+legend("topright", legend=salmonSp, col=salCol, pch=19, bty="n", cex=0.55)
+
+# Change size and color
+salSiz <- 1:5/5
+plot(kntm, axes=TRUE, las=1, pch =19, cex =salSiz[kntm$scientificname],
+     col =salCol[kntm$scientificname])
+# we don't see mykiss becasue it's under other dots
+plot(wC, add=TRUE)
+# Add lengend, change text font
+legend("topright", legend=salmonSp, col=salCol, pch=19, bty="n", cex=0.55, 
+       pt.cex=salSiz, text.font = 3)
+
+@
+
+But to be able to make nice plots with attributes it's better to use the function \texttt{spplot} and the trellis plots.
 
 \end{document}
