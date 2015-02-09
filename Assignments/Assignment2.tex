@@ -34,6 +34,17 @@ Create a \texttt{SpatialLinesDataFrame} with the \texttt{SpatialLines} object cr
 
 \Question Plot the \texttt{SpatialLinesDataFrame} object and use the column amphr to display different colours.
 
+%ADD TIPS TO ADD LAYERS FOR spplot
+%# set your color for your points
+%mCol <- c(?red?, ?blue?, ?green)
+%# make sure the slocumSpPointsDF m column is a factor
+%class(slocumSpPointsDF$m)
+%# If it?s not a factor do
+%slocumSpPointsDF$m <- as.factor(slocumSpPointsDF$m)
+
+%# plot using sp.layout, but use col, instead of zcol
+%spplot(nameOfSpLinesDataFrame, zcol = ?amphr?,  sp.layout = list(?sp.points?, col=mCol[slocumSpPointsDF$m]))
+
 \Question Overlay on this plot, a plot of the \texttt{SpatialPointsDataFrame} that use a different colour for each json file.
 
 \end{Exercise}

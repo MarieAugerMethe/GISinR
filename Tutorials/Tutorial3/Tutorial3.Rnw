@@ -1,0 +1,407 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+\usepackage{exercise}
+
+% For formating of R code
+%\newcommand{\SpatialPolygons}{\texttt{SpatialPolygons}}
+%\newcommand{\Polygons}{\texttt{Polygons}}
+%\newcommand{\Polygon}{\texttt{Polygon}}
+%\newcommand{\SpatialLines}{\texttt{SpatialLines}}
+
+% For tilde
+\usepackage{xspace}
+\newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
+
+%%%%%% Notes for next time I give the class
+% Put the section about how to create a map that's in tutorial 1 in this section.
+
+% Maybe add the North arrow on a different CRS to see how it shift
+
+% Maybe add the section on rgeos spComment for holes (see below)
+
+% Check whether the ggplot 2 are like lattice
+
+% Maybe add home range example
+
+% Maybe add the gridlines example see below
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hooks
+% Hook for tilde
+<<setup, include=FALSE>>=
+library(knitr)
+hook_source = knit_hooks$get('source')
+knit_hooks$set(source = function(x, options) {
+  txt = hook_source(x, options)
+  # extend the default source hook
+  gsub('~', '\\\\mytilde', txt)
+})
+@
+<<setupOp, include=FALSE>>=
+opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
+               tidy.opts=list(blank=FALSE, width.cutoff=52),
+               size="large")
+@
+
+\author{Marie Auger-M\'eth\'e}
+\title{GIS in R: Tutorial 3}
+\date{}
+\maketitle
+
+\large
+\section{\texttt{SpatialPolygons}}
+\subsection{Components of \texttt{SpatialPolygons}}
+The last tutorial introduced \texttt{SpatialLines} and some of the basic elements of \texttt{SpatialPolygons}. In particular, it discussed in detail the hierarchy of the elements needed for both of these classes. As for \texttt{SpatialLines}, \texttt{SpatialPolygons} have a set of nested of classes. However, \texttt{SpatialPolygons} are more complex than \texttt{SpatialLines} and all levels of object classes are composed of more slots than their \texttt{SpatialLines} analogue. 
+
+The fundamental class of \texttt{SpatialPolygons} is the \texttt{Polygon} class. As you can see below, a \texttt{Polygon} object is similar to a \texttt{Line} object, but with a few extra slots.
+
+<<compSlots>>=
+library(sp)
+getSlots("Polygon")
+getSlots("Line")
+@
+
+As for the \texttt{Line} class, the \texttt{Polygon} class is the fundamental class because it's the class that has a slot for the coordinates (\texttt{coords}). However, the \texttt{Polygon} class has four additional slots. Just like the \texttt{bbox} slot of \texttt{Spatial*} objects, some of the slots of \texttt{Polygon} objects are generated automatically: 1) the slot \texttt{labpt} is the label point and has the coordinates of the centroid of the polygon; 2) the slot \texttt{area} has the area of the polygon in the metric of the coordinates; and 3) the slot \texttt{ringDir} has the ring direction. However, the slot \texttt{hole}, which indicates whether the \texttt{Polygon} object is a hole (e.g. the a lake in a land polygon) is one slot that sometimes need to be manipulated. More on holes below.
+
+The next level of the hierarchy of polygon object class, the \texttt{Polygons} class, also have more slots than the lines analogue, the \texttt{Lines} class.
+
+<<compSlot2>>=
+getSlots("Polygons")
+getSlots("Lines")
+@
+
+The two most important slots are those that are similar for both object class: 1) the list of \texttt{Polygon} or \texttt{Line}; and 2) the \texttt{ID} slot. As we learned in the previous tutorial, the \texttt{ID} slot can only contain one single element describing the associated list of \texttt{Line} or \texttt{Polygon}. As for the \texttt{Polygon} class, the slots \texttt{labpt} and \texttt{area} are generally generated automatically. The \texttt{labpt} is the centroid of the largest \texttt{Polygon} constituting a \texttt{Polygons} object and the \texttt{area} of a \texttt{Polygons} object is the sum of all \texttt{Polygon} objects it contains. Note that the \texttt{labpt} is useful when we want to label polygons with the character string saved in the \texttt{ID} slot. The slot \texttt{plotOrder} is the order in which the \texttt{Polygon} should be plotted. The plot order is usually generated automatically based on the size of the \texttt{Polygon} object, largest first. The \texttt{plotOrder} slot is also present in the next level of the hierarchy, i.e., in \texttt{SpatialPolygons} objects.  In fact, this extra slot (\texttt{plotOrder}), is the only difference in the structure of  \texttt{SpatialPolygons} and \texttt{SpatialLines}.
+
+<<compSlots3>>=
+getSlots("SpatialPolygons")
+getSlots("SpatialLines")
+@
+
+Just like a \texttt{SpatialLines} object needs a list of \texttt{Lines} object, the \texttt{SpatialPolygons} take a list of \texttt{Polygons}. Note that, just like \texttt{SpatialLines} objects, \texttt{SpatialPolygons} are the level at which the coordinate reference system (CRS) is set. 
+
+The final level of the hierarchy is the \texttt{SpatialPolygonsDataFrame}. As for the objects of class \texttt{SpatialLinesDataFrame}, this level incorporates attributes.
+
+<<slotdf>>=
+getSlots("SpatialPolygonsDataFrame")
+getSlots("SpatialLinesDataFrame")
+@
+
+Just like the \texttt{SpatialLinesDataFrame}, you can only assign data value to each \texttt{Polygons} object (you cannot assign data value to the \texttt{Polygon} objects that are lumped into a single \texttt{Polygons} object).
+
+In brief, the \texttt{Polygon} object level is used to assign the coordinates, the \texttt{Polygons} object level is used to assign the ID, the \texttt{SpatialPolygons} object level is used to assign the CRS, and the \texttt{SpatialPolygonsDataFrame} object level is used to assign attributes to \texttt{Polygons} object. 
+
+\subsection{Creating \texttt{SpatialPolygons}}
+
+It's rare that you need to create \texttt{SpatialPolygons} from their raw coordinates. \texttt{SpatialPolygons} data are often imported from other sources or created based on similar object classes (e.g. maps of the world).
+
+\subsubsection{Importing shapefiles}
+
+First, we will import a shapefile with a \texttt{SpatialPolygonsDataFrame}. Shapefiles are files used by ArcGIS (see \url{http://help.arcgis.com/en/arcgisdesktop/10.0/help/index.html#/What_is_a_shapefile/005600000002000000/} for more information). Shapefiles require a set of different files: 1) the .shp file, which keeps track of the geometry (for \texttt{SpatialPolygons} similar of the \texttt{Polygon} level), 2) a .shx file, which keeps track of the index of feature geometry (for \texttt{SpatialPolygons} similar to the \texttt{Polygons} level), and 3) .dbf file that stores the attributes of the features (for \texttt{SpatialPolygons} similar to the \texttt{data.frame} in the \texttt{SpatialPolygonsDataFrame}). Other files can be assosciated with the shapefiles. For example, the .prj file keep tracks of the CRS (for \texttt{SpatialPolygons} similar to the CRS in the \texttt{SpatialPolygons}). All of these file should have the same name and only differ in their extension and they need to be saved in the same folder.
+
+Here, we will load a \texttt{SpatialPolygonsDataFrame} with a map of the west coast of north america. To import a shapefile in \texttt{R}, you need the package \texttt{rgdal}.
+
+<<ImportShp>>=
+# Load rgdal package which has the function readOGR
+library(rgdal)
+wC <- readOGR(dsn=".", layer="WestCoast")
+# This already a SpatialPolygonsDataFrame
+class(wC)
+# It already has a CRS because it had a WestCoast.prj file 
+proj4string(wC)
+# lets' plot it
+spplot(wC)
+@
+
+Note that other file types can be loaded with \texttt{readOGR} including google earth files  (.kml). 
+
+\subsubsection{\texttt{SpatialPolygons} from \texttt{SpatialPoints}}
+
+While creating \texttt{SpatialPolygons} from coordinates is rarely needed, there is one exception. I often need to create a \texttt{SpatialPolygons} object to represent my study area on a bigger map. Something I'll show you how to do using the Ocean Tracking Network (OTN) Kintama project data (more informationon the project website: \url{http://members.oceantrack.org/data/discovery/KNTM.htm}). The file kintama.csv is a modified version from the file animal.csv found on the OTN public data website (\url{http://members.oceantrack.org/data/discovery/bypublic.htm#K}). First we will create a \texttt{SpatialPointsDataFrame}.
+
+<<spPoints>>=
+# Import data
+kntm <- read.csv("kintama.csv")
+head(kntm)
+# Create a SpatialPointsDataFrame object
+coordinates(kntm) <- ~longitude +latitude
+proj4string(kntm) <- CRS("+proj=longlat +datum=WGS84")
+# Plot the point on the map of west coast
+plot(wC)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+@
+
+While we can see where the points are, a nicer way to show the study area would be to create a \texttt{SpatialPolygons} that represent the study area (i.e., a rectangle on the extent of the study area). For this, we can use the bounding box (\texttt{bbox}) from our \texttt{SpatialPoints}. First we need to get the coordinates of the bounding box and place them in the order that we would trace the polygon in.
+
+<<bbox>>=
+# Get the bounding box of the SpatialPoints object
+bbox(kntm)
+# We know that the SpatialPolygons should have a points for all combination of these points. You can use expand.grid to do this
+studyA <- expand.grid(long=bbox(kntm)["longitude",],lat=bbox(kntm)["latitude",])
+# See it has all the combination of longitude and latitude
+studyA
+# However, that's not enough. The coordinates should be in order in which you would trace the polygon (the ring direction). In most cases it should be clockwise. So here, 1: c(min(lon), min(lat)); 2: c(min(lon), max(lat)); 3: c(max(lon)), max(lat)); 4: c(max(lon), min(lat))
+studyA <- studyA[c(1,3,4,2),]
+# See we change the order
+studyA
+# The last trick, is that a polygon needs to be a closed line so the first and last locations need to be the same.
+# Here we repeat the first location at the end and bind it with rbind
+studyA <- rbind(studyA,studyA[1,])
+
+# We can make these coordinates a SpatialPoints object
+coordinates(studyA) <- ~long+lat
+proj4string(studyA) <- proj4string(kntm)
+# Let's plot these
+plot(studyA, col="red", pch=19, cex=0.5)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+plot(wC, add=TRUE)
+box()
+@
+
+Now we can create a \texttt{SpatialPolygons} from the \texttt{SpatialPoints}. We are using the same hierarchy as for the \texttt{SpatialLines}.
+
+<<spPoly, fig.width=9, fig.height=4.2>>=
+studyASP <- SpatialPolygons(list(Polygons(list(Polygon(studyA)), ID = "Study site")), proj4string=CRS(proj4string(studyA)))
+# Let's plot it
+layout(matrix(1:2,nrow=1))
+# First panel: zoomed out view
+plot(wC)
+# I'm using rgb to make stranparant colour
+plot(studyASP, border="red", col=rgb(1,0,0,0.5), add=TRUE)
+# Second panel: zoomed in view
+plot(studyASP, border="red")
+plot(wC, add=TRUE)
+plot(kntm, col="blue", pch=19, add=TRUE, cex=0.5)
+@
+
+\subsection{Holes in polygons}
+
+\texttt{R} is not a true GIS and does not represent polygons by their topology. The package \texttt{sp} does not check whether the lines cross or polygons have errors. Unlike other GIS software, the \texttt{sp} functions associated with polygons do not check whether the features are simple. This is has repercussion on how holes in \texttt{SpatialPolygons} are handled (e.g., the great bear lake in the Northwest Territories, Canada, see first figure of this tutorial). The package \texttt{sp} marks whether a \texttt{Polygon} as hole by using the \texttt{hole} slot and the ring direction (clockwise for nonholes, represented with 1, and anti-clokwise for holes, represeted with -1.). 
+
+%TO BE ELLABORATED IN A FUTURE VERSION? The specifications of \texttt{SpatialPolygons} in \texttt{sp} are not consistent with those of the Open Geospatial Consortium. The \texttt{rgeos} package does however, and thus require each hole to be associated with the exterior ring.  To be able to create compatible \texttt{Polygons}, you can use the \texttt{createSPComment} function to associated each \texttt{Polygons} object from the \texttt{SpatialPolyons}. Exterior rings are coded zero, while interior rings are coded with the 1-based index of the exterior ring to which they belong.
+
+Here we will investigate a \texttt{SpatialPolygonsDataFrame} I've created that has a hole in it.
+
+<<hr>>=
+# Read the simulated polygons
+HR <- readOGR(dsn=".", layer="hrSP")
+# Plot the SpatialPolygonsDataFram
+plot(HR, col="blue")
+# We want to look at each Polygon object. To do this we need to get the Polygons out of the SpatialPolygonsDataFrame.
+HR <- slot(HR,"polygons")[[1]]
+# We then need the list of Polygon objects out of the Polygons
+hr <- slot(HR, "Polygons")
+# Now we can see that there are 2 Polygon objects
+length(hr)
+# The first Polygon is not a hole
+slot(hr[[1]], "hole")
+# So its ring direction is clockwise: 1
+slot(hr[[1]], "ringDir")
+# We can also look at it's area
+slot(hr[[1]], "area")
+# Now we can look at the secon Polygon. Is it a hole
+slot(hr[[2]], "hole")
+# So its ring should be anticlokwise: -1
+slot(hr[[2]], "ringDir")
+# What's its area, much smaller 
+slot(hr[[2]], "area")
+@
+
+%\subsubsection{\texttt{SpatialPolygons} from \texttt{SpatialLines}}
+
+%HOME RANGE EXAMPLE?
+
+%MAYBE PUT AN EXAMPLE WITH AN MAINLAND AND ISLAND.
+
+\section{Visualisation}
+
+Traditional graphics, done with the function \texttt{plot}, are made incrementally. Graphic elements are added with a set of different functions. The \texttt{sp} package provide a traditional \texttt{plot} function.
+
+Trellis graphics  (e.g., those associated with the package \texttt{lattice}) allow to plot high-dimensional data by providing conditioning plots, sets of plots with shared axis. The \texttt{sp} package also provide a \texttt{spplot} function that use the trellis system from the \texttt{lattice} package.
+
+\subsection{Traditional plots}
+
+One advantage of plotting a \texttt{Spatial*} object is the szie of the axis will be automatically handled adequatly. For object with a projected CRS, the units in the x and y coordinates will be of equal length. For object with a geographical CRS, a sensible aspect ratio will be used. Note that although the default aspect ratio of \texttt{Spatial*} objects is generally adequate, you still adjust it using the \texttt{asp} argument (see \texttt{?asp}). The default aspect ratio chosen for \texttt{Spatial*} differ from the default chosen when plotting non spatial objects.
+
+<<plotBase, fig.width=9, fig.height=6>>=
+# Make 2 panels
+layout(matrix(1:2,nrow=1))
+# Plot Spatial* object
+plot(kntm, pch=19, cex=0.5)
+plot(wC, add=TRUE)
+title(main="Spatial object")
+# Plot normal object, use coordinates
+plot(coordinates(kntm), pch=19,cex=0.5)
+plot(wC, add=TRUE)
+title(main="Matrix with coordinates")
+@
+
+You can notice a few differences. The plot with the matrix of coordinates looks distorded, but not the plot of the \texttt{Spatial*} object. Another difference is that the \texttt{Spatial*} object doesn't plot the axis automatically, but the plot of the matrix does.
+
+To add axis on the a plot of \texttt{Spatial*} object, you can use the argument \texttt{axes}. Some of the \texttt{par} arguments used to change the appearance of the plot can also be used directly in the \texttt{plot} function, e.g., make the y-axis labels horizontal rather than vertical using the \texttt{las} argument. You can use the function \texttt{axis} to add an axis with a specific format. Note that you can add axis title and main graphic title using the function \texttt{title}.
+
+<<axes, fig.width=9, fig.height=8>>=
+layout(matrix(1:4, nrow=2))
+# Plot a spatial object with axes
+plot(kntm, axes=TRUE)
+# Add plot title
+title("axes=TRUE")
+
+# Make the y-axis label horizontal
+plot(kntm, axes=TRUE, las=1)
+# Add title
+title("axes=TRUE and las=1")
+
+# Make plot and add x-axis with axis
+plot(kntm)
+# 1 specify that it's the x-axis
+axis(1, at=c(-125,-120))
+# add box
+box()
+# Add title
+title("using axis()")
+
+# Make a plot and add x-axis with specific label
+plot(kntm)
+# x-axis with specified label and color for ticks
+axis(1, at=c(-125,-120), labels=c("125 W", "120 W"), col.ticks="green")
+# y-axis color for both line and ticks
+axis(2, at=c(46,50), labels=c("46 N", "50 N"), col="red")
+# add title and x-axis title
+title("using axis() with specs", xlab="Longitude")
+@
+
+Margin size and other ploting parameters can be adjusted for all graphics using the function \texttt{par}. For example, the argument \texttt{mar} can be used to set the margin size in units of height of a line of text. The order of the argument \texttt{mar} is bottom, left, top, and right margins.
+
+
+<<margin, fig.width=9, fig.height=4>>=
+layout(matrix(1:2, nrow=1))
+# plot with original margin
+plot(kntm, axes=TRUE)
+par(mar=c(3,1,1,1))
+plot(kntm, axes=TRUE)
+@
+
+Often when we plot spatial data, we want to add features such as the North arrow and/or a scale bar. This can be done using the function \texttt{SpatialPolygonsRescale}.
+
+<<NscaleMyLocation>>=
+# Plot the SpatialPoints
+plot(kntm, axes=TRUE, las=1)
+# Add North arrow
+SpatialPolygonsRescale(layout.north.arrow(),offset=c(-118, 49.8), plot.grid=FALSE)
+# Add scale bar
+SpatialPolygonsRescale(layout.scale.bar(), offset = c(-127,45.2), fill = c("transparent", "black"), plot.grid = FALSE)
+# add the value for scale
+text(x=-126.9,y=45.6, "0 ")
+text(x=-125.9,y=45.6, expression(1*degree))
+# You can use the locator to choose the location, (uncomment the code below)
+
+#SpatialPolygonsRescale(layout.north.arrow(),offset=locator(1), plot.grid=FALSE)
+
+#SpatialPolygonsRescale(layout.scale.bar(), offset = locator(1), fill = c("transparent", "black"), plot.grid = FALSE)
+
+#text(locator(1), "0")
+
+#text(locator(1), expression(1*degree))
+
+@
+
+%To add grid lines, you can use the function \texttt{gridlines}.
+%This is not so great see p. 83
+%<<gridLines>>=
+%plot(kntm,axes=TRUE, las=1)
+%# Create a SptialLines object for the Spatial object you interested in
+%kntmGrid <- gridlines(kntm, easts=seq(-140,-110, by=1), norths=seq(44,60,by=1))
+%kntmGrida <- gridat(kntm, easts=seq(-140,-110, by=1), norths=seq(44,60,by=1))
+%class(kntmGrid)
+%plot(kntmGrida, add=TRUE, lty=2, col="grey")
+%box()
+%@
+
+
+Multiple \texttt{Spatial*} objects can be added to a plot using the argument \texttt{add=TRUE}. This can be thought as the equivalent of adding layers on top of the orginal layer. Note that the function \texttt{points} can also be used to add {SpatialPoints} objects or \texttt{lines} to add \texttt{SpatialLines}.
+
+<<plotBase2>>=
+layout(matrix(1:2,nrow=1))
+plot(wC)
+plot(kntm, add=TRUE, col="blue")
+# An alternative, the default points are different
+plot(wC)
+points(kntm, col="blue")
+@
+
+By default, the final plot will have the geographical extent of the first layer plotted. More precisely, the default geographical area that is plotted in a plot of a \texttt{Spatial*} object is the geographical extent of data extended on each side by a margin of a minimum of 4\% the extent.
+
+This said, you can partly control how much you are zoomed in or out by using the argument \texttt{xlim} and \texttt{ylim}.
+
+<<zoom, fig.width=9, fig.height=8>>=
+layout(matrix(1:4,nrow=2))
+# Original - default
+plot(kntm, axes=TRUE, las=1)
+plot(wC, add=TRUE)
+title("Default")
+# Zoom in
+plot(kntm, axes=TRUE, xlim=c(-126,-119), ylim=c(45,47), las=1)
+plot(wC, add=TRUE)
+title("Zoomed in")
+# Zoom out
+plot(kntm, axes=TRUE, xlim=c(-160,-120), ylim=c(40,60), las=1)
+plot(wC, add=TRUE)
+title("Zoomed out")
+@
+
+As you might noticed this is not perfect and that's because the geographical margin are partly fixed by the plot size. You can change the plot size using the \texttt{par} function. This is still not a perfect solution, but it brings you closer to the xlim and ylim. 
+%Not sure how great that part is. Maybe put the table on p. 68.
+
+<<plotsize>>=
+# To set own zoom
+# Size of plot in inches
+pin <- c(1,1) 
+# The x-axis limits
+xx <- c(-160,-120)
+# The y-axis limits
+yy <- c(40,55) 
+# ratio between x and y axes
+ratio <- diff(xx)/diff(yy) 
+# Set plot size based in ratio, xaxs="i" means to not add the 4% margin
+par(pin = c(ratio * pin[2], pin[2]), xaxs = "i", yaxs = "i")
+# Plot the SpatialPoints
+plot(kntm, axes=TRUE, xlim=xx, ylim=yy, las=1)
+plot(wC, add=TRUE)
+@
+
+Often what is of interest is to plot the attributes, for example the salmon species of the Kintama projet.
+
+<<att, fig.width=9, fig.height=4>>=
+layout(matrix(1:2,nrow=1))
+# Look at salmon species
+salmonSp <- unique(kntm$scientificname)
+# These are of class factor which is great, as the numbers will be related to the name
+class(salmonSp)
+# how many species
+length(salmonSp)
+# So choose 5 colours
+salCol <- c("blue", "red", "yellow", "green", "purple")
+# Plot with a color for each species
+plot(kntm, axes=TRUE, las=1, pch =19, col =salCol[kntm$scientificname],
+     cex=0.5)
+# we don't see O. mykiss because it's under other dots
+plot(wC, add=TRUE)
+# Add lengend
+legend("topright", legend=salmonSp, col=salCol, pch=19, bty="n", cex=0.55)
+
+# Change size and color
+salSiz <- 1:5/5
+plot(kntm, axes=TRUE, las=1, pch =19, cex =salSiz[kntm$scientificname],
+     col =salCol[kntm$scientificname])
+plot(wC, add=TRUE)
+# Add lengend, change text font
+legend("topright", legend=salmonSp, col=salCol, pch=19, bty="n", cex=0.55, 
+       pt.cex=salSiz, text.font = 3)
+
+@
+
+While using the traditional \texttt{plot} function can help you do nice plots, it's often requires tedious choices for arguments. If you want to plot \texttt{Spatial*} object with attributes quickly, you can use the function \texttt{spplot} and trellis plots. If we have time more on this next class.
+
+\end{document}
