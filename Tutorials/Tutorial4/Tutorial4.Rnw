@@ -40,6 +40,14 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 \large
 \section{Extracting informatiom}
 
+Clipping, simply by subseting.
+
+<<>>=
+SPobj1
+SPobj2
+# NEED TO HAVE EXACTLY THE SAME PROJ4
+clipSPobj1 <- SPobj1[SPobj2,]
+@
 
 
 
