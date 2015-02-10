@@ -40,6 +40,37 @@ opts_chunk$set(fig.width=4, fig.height=4, fig.align="center", tidy=TRUE,
 \large
 \section{Extracting informatiom}
 
+% Mayb put that part with polygons
+
+rgeos 
+Geometry Engine - Open Source (GEOS) and Java Topology Suite (JTS) only handle planar geometries, so the data should be projected. 
+
+I think that's in contrast to things like gDistance package and spdep which has great circle distance?
+
+<<rgeos>>=
+library(rgeos)
+# Minimum distance?
+getScale()
+@
+
+JTS and GEOS follow the OpenGIS(R) simple features specificaion, in whic polygons may have only one exterior boundary ring and an unlimited number of interior boundaries (i.e. unlimitedt number of holes). Becasue \texttt{sp} \texttt{Polygons} are multi-polygon objects (can have multiple \texttt{Polygon} objects that each have a distinct exterior boundary, e.g. province mainland and all of the province islands can be lumpped under one \texttt{Polygons} object and thus associated with one ID) there is no direct match between GEOS simple feature polygons and \texttt{SpatialPolygons} objects. This means that for \texttt{Polygons} object to be exported to GEOS, they need to have an appropriate \texttt{comment} attribute. This only affects polygons, not points and lines. Polygons can be checked using the createSPComment function from rgeos or the maptools checkPolygonHoles, see p.132- 133 Bivand
+
+Get area, many ways, rgeos function need planar. The area slot will give you an area in any uint... but taht moght not make sense.
+
+<<>>=
+Area <- gArea(olinda_utm, byid = TRUE)
+totArea <- gArea(olinda_utm)
+olinda_utm$area <- sapply(slot(olinda_utm, "polygons"), slot, "area")
+all.equal(unname(Area), olinda_utm$area)
+@
+
+<<addnewcol>>=
+olinda_utm$dens <- olinda_utm$V014/(olinda_utm$area/1e+06)
+@
+
+
+Maybe use blue shark data and seal data.
+
 I've included the Northwest Atalantic Fisheries Organization (NAFO) divisions shapefile, which I found on the NAFO website at \ulr{http://www.nafo.int/data/frames/data.html}. 
 
 <<NAFOZone>>=
@@ -79,5 +110,17 @@ Use aggregate length with spatialpoints to get at the number of points in a poly
 <<Aggregate>>=
 
 @
+
+
+Create random points
+
+<<>>=
+library(spatstat)
+dran <- runifpoint(100, win = as.vector(t(bbox(ds))))
+#create 100 random points
+plot(ds)
+plot(dran, add = T)
+@
+
 
 \end{document}
