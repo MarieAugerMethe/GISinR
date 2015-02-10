@@ -17,7 +17,7 @@
 
 % Notes from the class: Maybe add an examples where we compare the coordinates of object with different projections. In addition, many were confused about the projections, maybe divided better the steps that goes from a map to a reprojected sp object. (1. Get map, 2. Make the map an sp object, 3. Transform the projection). Maybe look into when prune is needed and when the clip to limit is needed. Maybe in would be better to just present the sp class in this tutorial and present the projections in tutorial 2. Actually, I think the best trick would be to create a SpatialPolygons from the map and save it in a .shp file. I think this would limit the confusion associated with transforming the map into a sp object and would focuss on the projection transformation. Check whether I need ggplot2 for the spplot. Need to emphasize when you want to transform the projection of an object you need to first assign the appropriate CRS (using proj4string and CRS) and then transfrom using spTransform. Emphasize that the coordinates only work in the CRS that they were collected in.
 
-% Add RColoBrewer pallete when discuss spplot, in particular, discuss the function display.brewer.all(type="seq") and display.brewer.all(type="div") 
+% Add RColoBrewer pallete when discuss spplot, in particular, discuss the function display.brewer.all(type="seq") and display.brewer.all(type="div"), remember that you need to state the cuts to match with the color palette, e.g.: spplot(olinda_utm, zcol="dens", col.regions=brewer.pal(7, "YlOrRd"), cuts=6)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
