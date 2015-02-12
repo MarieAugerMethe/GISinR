@@ -1,0 +1,478 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+\usepackage{exercise}
+
+% For formating of R code
+%\newcommand{\SpatialPolygons}{\texttt{SpatialPolygons}}
+%\newcommand{\Polygons}{\texttt{Polygons}}
+%\newcommand{\Polygon}{\texttt{Polygon}}
+%\newcommand{\SpatialLines}{\texttt{SpatialLines}}
+
+% For tilde
+\usepackage{xspace}
+\newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hooks
+% Hook for tilde
+<<setup, include=FALSE>>=
+library(knitr)
+hook_source = knit_hooks$get('source')
+knit_hooks$set(source = function(x, options) {
+  txt = hook_source(x, options)
+  # extend the default source hook
+  gsub('~', '\\\\mytilde', txt)
+})
+@
+<<setupOp, include=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=4.9, fig.align="center", tidy=TRUE,
+               tidy.opts=list(blank=FALSE, width.cutoff=52),
+               size="large")
+@
+
+\author{Marie Auger-M\'eth\'e}
+\title{GIS in R: Tutorial 4}
+\date{}
+\maketitle
+
+\large
+\section{Manipulating layers}
+
+Now that we have a good understanding of \texttt{SpatialPoints}, \texttt{SpatialLines}, and \texttt{SpatialPolygons}, we can start extracting information from these objects and perform vector analyses. Often we are interested in manipulating multiple \texttt{Spatial} objects at the same time and \texttt{R} has many tools to help handling \texttt{Spatial} objects. We can think of each \texttt{Spatial} object in an analysis as a layer. Here, I'm going to present a few tools to manipulate multiples layers, most of which will be from the package \texttt{rgeos}. This package is an interface to Geometry Engine - Open Source (GEOS; see \url{http://trac.osgeo.org/geos/}). GEOS has a set of spatial functions, including functions to assess whether spatial objects intersect one another and functions that assess the distance between objects. In this tutorial, we will explore a few of the GEOS functions available through the \texttt{rgeos} package.
+
+\subsection{Setting up the layers}
+
+We are going to import four shapefiles. The four \texttt{Spatial} objects created when we import these shapefile are our original layers. Three of the layers are based on data downloaded from the Natural Earth website (\url{http://www.naturalearthdata.com/}). This is a great website with a set of good based layers. Here, I used two of the Natural Earth rivers datasets: 1) 10 m global rivers and lakes centerlines; and 2) 10m  North American river supplement. In addition, I used the Natural Earth 10m states and province datasets. I modified these layers to clip them to the extent of our study area and I removed most all superfluous information from the layers. The resulting shapefiles are named: mainRivers, smallRivers, and borders. Our final layr is the salmon data from the Ocean Tracking Network (OTN) Kintama project data (more informationon the project website: \url{http://members.oceantrack.org/data/discovery/KNTM.htm}). The shapefile kntm is a modified version from the file animal.csv found on the OTN public data website (\url{http://members.oceantrack.org/data/discovery/bypublic.htm#K}). This is based on the same dataset that we used in Tutorial 3.
+
+<<importLayers>>=
+library(rgdal)
+# OTN slamon point data
+kntm <- readOGR(dsn=".", layer="kntm")
+# Main rivers
+mainRiv <- readOGR(dsn=".", layer="mainRivers")
+# Smaller rivers
+smallRiv <- readOGR(dsn=".", layer="smallRivers")
+# Administrative boundaries and coast lines
+bounds <- readOGR(dsn=".", layer="borders")
+
+# Take a quick look at what attributes these objects contain
+names(kntm)
+names(mainRiv)
+names(smallRiv)
+names(bounds)
+@
+
+When we do vector manipulation it is essential that the layers are in the same coordinate reference system (CRS). So the first thing we will do is check the CRS with the function \texttt{proj4sting} and by plotting the layers on top of one another to get a qualitative sense of whether the object by where they should be.  
+
+<<checkCRS>>=
+# What is the CRS of our main data
+proj4string(kntm)
+# Are the other layers in the same CRS?
+identical(proj4string(kntm), proj4string(mainRiv))
+identical(proj4string(kntm), proj4string(smallRiv))
+identical(proj4string(kntm), proj4string(bounds))
+# Ok, we are good, they are all the same
+
+# Let's take a quick look
+library(RColorBrewer) # For color palette (brewer.pal)
+spplot(kntm, zcol="scntfcn", col.regions=brewer.pal(6, "Reds")[-1],
+       sp.layout=list(list("sp.polygons", bounds),
+                      list("sp.lines", mainRiv, col="blue"),
+                      list("sp.lines", smallRiv, col="lightblue")))
+@
+
+We can see in the plots that rivers are on land and many of them end up on the coast line, which is a sign that things match up. In addition, most salmon points are on rivers, which is also a sign that the CRS are consistents. Note that some salmon points are not on rivers, this could be because these rivers are too small to be incorporated in the Natural Earth datasets. Something that would need to be explored further if this was a real analysis.
+
+\subsection{Creating new layers}
+
+In our case we are not interested in dividing the rivers into big and small rivers. The separate layers were only made because the river data from Natural Earth came into two different shapefiles. Thus, the first thing we might like to do his to lump the rivers into one layer. 
+
+Before we create one layer with all rivers we want to verify whether rivers intersect and for this we can use the \texttt{rgeos} package tool \texttt{gInstersection}.
+
+<<binding2layers>>=
+library(rgeos)
+# Find area where mainRIv intersects with smallRiv
+rivInt <- gIntersection(mainRiv, smallRiv)
+plot(bounds)
+plot(mainRiv, add=TRUE, col="blue")
+plot(smallRiv, add=TRUE, col="lightblue")
+plot(rivInt, add=TRUE, col="green", pch=19, cex=0.5)
+@
+
+We can see that the rivers are intersecting at many points, although not at all points were the main rivers appear to cross smaller rivers. In cases were they look like the rivers crossed but no intersection was found could be the results of lines being close to one another but not exactly on top of each other.
+
+Here we would like to create one layer with all rivers but where intersecting lines become one. We can use the \texttt{rgeos} \texttt{gUnion} function, which will join intersecting geometries.
+
+<<gUnion>>=
+rivAll <- gUnion(mainRiv, smallRiv)
+# We now have all the rivers in one layer
+plot(bounds)
+plot(rivAll, add=TRUE, col="blue")
+# What's the object created?
+class(rivAll)
+# Compared to the original datasets
+class(mainRiv)
+class(smallRiv)
+# So we lost the sttributes associated with the mainRiv and smallRiv
+
+# How many lines objects is there? (remember only lines object can have an ID and thus attributes)
+length(rivAll)
+# In contrast smallRiv and mainRiv had many more Lines objects
+length(smallRiv)
+length(mainRiv)
+@
+
+So gUnion creates one object with one \texttt{Lines} object. This may not always be optimal. However, in our case we are only interested in identifying areas with river water and \texttt{gUnion} is a perfect tool for this.
+
+Now let's say we would like to focuss only on the salmons from United States. We would like to create a new layer that discard all inormation from the Canadian salmons. As a first step, we we another union tool \texttt{gUnaryUnion} from \texttt{rgeos} to create a new layer with a polygon that merge all American polygons into one.
+
+<<gUnaryUnion>>=
+# We want all polygons from the bounds layers that are of the admin "United States of America". For this we can simply subset the bounds layer using row index and the admin attributes.
+usa <- bounds[bounds$admin == "United States of America",]
+# Nwe we only have the America polygons
+plot(usa)
+# We still have all the data associated with these polygons
+summary(usa)
+# We want to create one big polygon that represent the borders of this multipolygon. For this we can use gUnaryUnion
+usaB <- gUnaryUnion(usa)
+# We can see now that we only have the surrounding border
+plot(usaB, add=TRUE, border="purple", lwd=2)
+# But what is the new object?
+class(usaB)
+length(usaB)
+# Just one SpatialPolygons, with no data
+@
+
+We can then use this new polygon (usaB) to clip the layers to be only of the extent of this new polygon using \texttt{gIntersection}.
+
+<<gIntersection2>>=
+# Get the rivers in the usa
+usaRiv <- gIntersection(rivAll, usaB)
+# Get the salmons in the usa
+usaKntm <- gIntersection(kntm, usaB)
+# let's plot these new layers
+plot(bounds)
+plot(usaB, add=TRUE, border="purple", lwd=2)
+plot(usaRiv, col="blue", add=TRUE)
+plot(usaKntm, col="red", add=TRUE, pch=19, cex=0.5)
+# What's in new layers
+class(usaRiv)
+class(usaKntm)
+# They have no data
+@
+
+So \texttt{gIntersection} can clip the data to it's appropriate size but the returned object don't have data anymore, i.e., they are not \texttt{Spatial} objects with data frames. This is not surprising for the rivers since the rivAll object was already simply a \texttt{SpatialLines}, but waht if we wanted to keep the salmon attribute data? One option is to use spatial indexing. This is particularly useful for \texttt{SpatialPointsDataFrame}.
+
+<<subsetting>>=
+# We can subset Spatial objects with another Spatial object.
+# For example you can take only the data points that are in the usaB
+usaKntm2 <- kntm[usaB,]
+# Just like before this is going to have only the American points
+plot(bounds)
+plot(usaKntm2, add=TRUE, col="red", pch=19, cex=0.5)
+plot(usaB, add=TRUE, border="purple", lwd=2)
+# However, unlike the usaKntm object made above this will have data
+class(usaKntm)
+class(usaKntm2)
+# It keeps all the columns from the kntm that we are subsetting
+identical(names(usaKntm2), names(kntm))
+@
+
+While we can also do a spatial subseting with polygons and lines, it will not clip the \texttt{Lines} and \texttt{Polygons} to the border. What it does is take all lines that goes inside the usaB but also keeps the parts that are outside. Here I'm using the mainRiv to give you a good examples.
+
+<<subsetting2>>=
+usaRiv2 <- mainRiv[usaB,]
+plot(bounds)
+# Original mainRiv
+plot(mainRiv, add=TRUE, col="lightblue")
+# Subsetted usaRiv2
+plot(usaRiv2, add=TRUE, col="blue")
+# But it keeps the data
+class(usaRiv2)
+identical(names(usaRiv2), names(mainRiv))
+@
+
+So you can see that all rivers that never enters the usaB polygons are excluded. Any rivers that enters usaB is kept, including the sections of these rivers that are outside usaB. The advantage here is that all of the attibutes associated with the rivers that intersects with usaB are kept.
+
+I often want to summarise the data from one layer based on whether they are in the features of another layer. For example, we might want to know how many species of salmon have been captured in each of the regions of our study area. To do this, we can use the function \texttt{aggregate}. The function \texttt{aggregate} will split the data into subset and apply a function to this subset. You can use simple function such as mean directly or you can create a small function that you would like to apply to this subset. In our case, we want to count the number of different species in each \texttt{Polygons} found in the bounds object.
+
+In our case, we will first create a function that will get the unique values of the subset, here the unique scientific names found in the subset, and count how many unique values this subset had by getting the length of the vectored return by the function \texttt{unique}.
+
+<<newFx>>=
+# Get the number of unique value in a dataset
+nSp <- function(x){length(unique(x))}
+# Just for fun let's apply this function to a simple vector
+simEg <- c(1,1,1,4,6,4)
+simEg
+# So although there are 6 elements to this vector , it only has 3 unique values: 1,4,6.
+
+# Let's see if our function returns 3
+nSp(simEg)
+@
+
+Now that we have the function we want to apply to the subsets, we can use aggregate. The kntm object will be subsetted by the \texttt{Polygons} from bounds with which they intersect.
+
+<<aggregate>>=
+# Use aggregate to apply the function nSp to each subset
+regionsSp <- aggregate(kntm[c("scntfcn")], by=bounds, FUN=nSp)
+summary(regionsSp)
+# Note that we get NA instead of 0
+# We can replace these values using is.na function
+regionsSp$scntfcn[is.na(regionsSp$scntfcn)] <- 0
+names(regionsSp)
+# Setting colors for salmon species
+salCol <- c("red", "pink", "green", "purple", "blue")
+salSiz <- 1:5/5
+spplot(regionsSp, zcol="scntfcn", col.regions=brewer.pal(7, "Reds"), cuts=6,
+       sp.layout=list("sp.points", kntm, pch=19, 
+                      col=salCol[kntm$scntfcn],cex=salSiz[kntm$scntfcn]))
+@
+
+We can see here that our British Columbia dataset has the most salmon diversity. You can confirm that our code worked by counting the number of different coloured point in each regions and see if the number correspond to the color gradient of the polygon of the region. 
+
+\texttt{aggregate} is a very useful function and here we are going to use it to calculate the number of detections taken at each receivers. The first step we will do here is to make a new layer that has the location of each receivers. For this we will use the function \texttt{unique} on the coordinates of the kntm object.
+
+<<uniqueCoordinates>>=
+# Get the coordinates of the receivers using the function unique on the coordinates of kntm
+recLoc <- data.frame(unique(coordinates(kntm)))
+# Make a SpatialPoints object using these coordinates
+coordinates(recLoc) <- ~ coords.x1 + coords.x2
+proj4string(recLoc) <- CRS(proj4string(kntm))
+# We can see that there are only a few receiver locations compared to the number of detections
+length(recLoc)
+length(kntm)
+# Let's plot the recLoc on top of the kntm to make that we have all of the receivers and that they are in the good locations
+plot(kntm)
+plot(recLoc, add=TRUE, pch=19, col="red", cex=0.5)
+@
+
+Now that have the receiver locations, we can use aggregate to count the number of detections at each receiver. Here our new function is simply getting the length of the subset and thus the number of detections.
+
+<<aggregate2>>=
+# Function to get the number of detections in the subset
+nDe <- function(x){length(x)}
+# Get the number of detections per receiver locations
+decPerRec <- aggregate(kntm[c("scntfcn")], by=recLoc, FUN=nDe)
+summary(decPerRec)
+names(decPerRec)
+# Let's plot it with bubble
+bubble(decPerRec, zcol="scntfcn", col="red",
+       sp.layout=list(list("sp.polygons", bounds),
+                      list("sp.lines", rivAll, col="blue")),
+       main="Detections per receiver")
+@
+
+\subsection{Measuring object features}
+
+In general, GEOS only handle planar geometries, and it's better to use projected CRS. This is especially true when one wants to look at area and distance. In fact, if you try to get the area using \texttt{gArea} on data with a geographical CRS, you'll get a warning,
+
+<<gAreaWarning>>=
+gArea(bounds)
+@
+
+So let's transfrom our lwayers to a projected CRS. Let's use the Universal Tranverse Mercator (UTM) zone 10. Zone 10 covers most of our kntm data. Using UTM is not perfect in this case, since some points are in zone 11, but it should do the trick for now.
+
+<<utmzone10>>=
+# Use spTransform to creat new layers with UTM projection
+boundsUTM <- spTransform(bounds, CRS("+proj=utm +zone=10 +datum=WGS84"))
+decUTM <- spTransform(decPerRec, CRS("+proj=utm +zone=10 +datum=WGS84"))
+riversUTM <- spTransform(rivAll, CRS("+proj=utm +zone=10 +datum=WGS84"))
+# Lets' look at it
+plot(boundsUTM)
+plot(riversUTM, add=TRUE, col="blue")
+plot(decUTM, pch=19, cex=0.5, col="red", add=TRUE)
+@
+
+Now we should be able to get the area with \texttt{gArea}.
+
+<<gArea>>=
+# This will give us the overall area of our SpatialPolygonsDataFrame object
+gArea(boundsUTM)
+# If we want the area of each polygons object we can use
+gArea(boundsUTM, byid=TRUE)
+# These are in the units of the projection, so in our case m^2. SO if you want it in km^2 divide by 1 000 000
+# We can add these in a new column of the boundsUTM
+boundsUTM$size <- gArea(boundsUTM, byid=TRUE)/1000000
+# The only provincs/state we have complete is Washington, the others are clipped at the edge, but we can use Washington to check wehther the area estimate is correct
+boundsUTM$size[boundsUTM$name == "Washington"]
+# According to wikiedia it's 184,827 km2
+# So we area a bit off, not too sure why
+@
+
+One thing that is often useful is to be able to put a buffer around a feature of interest. For example, here we would like to estimate how much river water there is close to each receiver locations. For this we can use \texttt{gBuffer}. This is a completely artificial example. I made the buffer really big just so we can visualise them easily.
+
+<<gBuffer>>=
+# Let's put a 10 km buffer around the rivers
+riv10k <- gBuffer(riversUTM, width=10000)
+# Let's put a 25 km buffer  arround the receivers. In this case we want to keep each points indepdent and keep the data and so we use byid=TRUE
+dec25k <- gBuffer(decUTM, width=25000, byid=TRUE)
+# We now have a SpatialPolygons and SpatialPolygonsDataFrame
+class(riv10k)
+summary(dec25k)
+plot(boundsUTM)
+plot(riversUTM, col="blue", add=TRUE)
+plot(riv10k, col=rgb(0,0,0.7,0.5), border=NA, add=TRUE)
+plot(decUTM, col="red", add=TRUE, pch=19, cex=0.5)
+plot(dec25k, col=rgb(1,0,0,0.5), border=NA, add=TRUE)
+@
+
+Now we would like to see how much water edge (represented by the 10k buffer) is in the vacinity of each receiver (represented by the 25k buffer). Here, again we will make use of \texttt{gIntersection} again.
+
+<<gIntersection3>>=
+rivInRec <- gIntersection(riv10k, dec25k, byid=TRUE)
+# Now we will have new polygons for each intersection, but that means that if some dec25 did not intersect with the river buffer we will have fewer number of polygons
+length(rivInRec)
+length(dec25k)
+# This is the case
+plot(dec25k, col="red", border=NA)
+plot(rivInRec, add=TRUE)
+plot(riv10k, col=rgb(0,0,0.7,0.5), border=NA, add=TRUE)
+plot(boundsUTM, add=TRUE)
+box()
+@
+
+So now we have a set of polygons that represent the area where the riv10k intersected with dec25k. As we can see above, the new \texttt{SpatialPolygons} has less \texttt{Polygons} than the dec25k buffer polygons and that's because \texttt{gIntersection} only creates a new polygon for area where riv10k and dec25k intersects and not for the dec25k buffer polygons that don't intersect wth riv10k. 
+
+In our case we would like to associated each dec25k buffer \texttt{Polygons} object to the area of water river in them. For this, we first need to find the appropriate row names to link the rivInRec object that resulted from the \texttt{gInstersection} of riv10k with dec25k. The row name of an object created with \texttt{gIntersection} will be a combination of the name of the two objects is intersects. We can use the function \texttt{strsplit} to divide the row name into its two components.
+
+<<nameIndex>>=
+# First let's look at the name of the riv10k, dec25k, and rivInRec
+head(row.names(riv10k))
+head(row.names(dec25k))
+head(row.names(rivInRec))
+# You cna see that rivInRec is a combination of the row names of riv10k and dec25k
+
+# Now we want to use strsplit to divide the name of rivRec and get the name of dec25k
+divName <- strsplit(row.names(rivInRec), " ")
+# It gives a list wth each element having 2 elements
+head(divName,3)
+length(divName[[1]])
+# We only want the second element, because that's the name associated with dec25k. We will the second element using sapply (which is really similar to lapply we learned in previous Tutorial)
+divName <- sapply(divName, "[", 2)
+# Ok we only have the names associated with dec25k
+head(divName)
+@
+
+Now we can use the function \texttt{gArea} on each \texttt{Polygons} object of the rivInRec layers and associated these with the appropriate dec25k \texttt{Polygons} using the names we have just found above. 
+
+<<addH2O>>=
+# Now we can create a new column in dec25k that will contain the amount of river edge we have in the buffer of the receiver and put 0.
+dec25k$H2O <- 0
+# We can calculate the area of each Polygons in RivInRec using gArea(byid=TRUE). We use the name we created above to associated the rivInRec Polygons to the of dec25k
+dec25k$H2O[match(divName,row.names(dec25k))] <- gArea(rivInRec, byid=TRUE)
+# Looks qualitatively ok
+spplot(dec25k, zcol="H2O",
+       sp.layout=list(list("sp.polygons",rivInRec,col="blue"),
+                      list("sp.polygons", riv10k, fill=rgb(0,0,1,0.5), col=NA),
+                      list("sp.polygons", boundsUTM)))
+@
+
+\begin{Exercise}
+
+The package \texttt{rgeos} has a multitude of tools for spatial analyses. In this tutorial I have only presented a small subsets of the tools tha are available to you. For this exercise, I want you to explore the function \texttt{gDistance}. 
+
+\Question Get the information on this function by typing \texttt{?gDistance} in your console.
+
+\Question Apply \texttt{gDistance} to the decUTM object. Write in a comment in the code what the results mean.
+
+\Question Apply \texttt{gDistance(byid=TRUE)} to the decUTM object. Write in a comment your interpretation of the results.
+
+\Question Transform the kntm layer into a new layer with an UTM zone 10 projection. Using this new layer calculate the minimum distance between detection of \textit{Oncorhynchus nerka} and \texttt{Salvelinus malma}.
+
+\end{Exercise}
+
+% 
+% 
+% Note that I have transform the kintama data for it to be in the same projection as the rivers which is BC Albers (see \url{http://spatialreference.org/ref/epsg/nad83-bc-albers/}).
+% 
+% % Mayb put that part with polygons
+% 
+% 
+% I think that's in contrast to things like gDistance package and spdep which has great circle distance?
+% 
+% <<rgeos>>=
+% library(rgeos)
+% # Minimum distance?
+% getScale()
+% @
+% 
+% JTS and GEOS follow the OpenGIS(R) simple features specificaion, in whic polygons may have only one exterior boundary ring and an unlimited number of interior boundaries (i.e. unlimitedt number of holes). Becasue \texttt{sp} \texttt{Polygons} are multi-polygon objects (can have multiple \texttt{Polygon} objects that each have a distinct exterior boundary, e.g. province mainland and all of the province islands can be lumpped under one \texttt{Polygons} object and thus associated with one ID) there is no direct match between GEOS simple feature polygons and \texttt{SpatialPolygons} objects. This means that for \texttt{Polygons} object to be exported to GEOS, they need to have an appropriate \texttt{comment} attribute. This only affects polygons, not points and lines. Polygons can be checked using the createSPComment function from rgeos or the maptools checkPolygonHoles, see p.132- 133 Bivand
+% 
+% Check if polygons overlap?
+% <<gOverlaps>>=
+% pols_overlap <- gOverlaps(olinda_utm, byid = TRUE)
+% any(pols_overlap)
+% # Maybe discuss the problems associated with scale
+% oScale <- getScale()
+% setScale(10000)
+% pols_overlap <- gOverlaps(olinda_utm, byid = TRUE)
+% any(pols_overlap)
+% bounds <- gUnaryUnion(olinda_utm)
+% setScale(oScale)
+% sapply(slot(slot(bounds, "polygons")[[1]], "Polygons"), slot, "area")
+% @
+% 
+% 
+% 
+% length of geometry, what does it means for points? and polygons?
+% 
+% <<gLength>>=
+% 
+% @
+% 
+% Whether object touches, makes a matrix for each oject can be byid or comparing two objects.
+% <<>>=
+% t0 <- gTouches(stream_utm, byid = TRUE)
+% # Maybe add merge?
+% # also SpatialLinesLengths with great circle distance
+% @
+% 
+% 
+% 
+% Maybe use blue shark data and seal data.
+% 
+% I've included the Northwest Atalantic Fisheries Organization (NAFO) divisions shapefile, which I found on the NAFO website at \ulr{http://www.nafo.int/data/frames/data.html}. 
+% 
+% <<NAFOZone>>=
+% library(rgdal)
+% NAFO <- readOGR(".", "Divisions")
+% # Note that they use NAD83 as a geographic CRS
+% proj4string(NAFO)
+% plot(NAFO)
+% @
+% 
+% 
+% Maybe do it by clipping the rivers available in the study area of Kintama example.
+% Talk about over, how it gives the attributes from the for the object2, instead of obj1.
+% 
+% <<over>>=
+% sel <- over(stations, lnd)
+% head(sel,15)
+% names(lnd)
+% names(stations)
+% summary(sel)
+% 
+% @
+% 
+% Use aggregate length with spatialpoints to get at the number of points in a polygon
+% 
+% <<Aggregate>>=
+% 
+% @
+% 
+% 
+% Create random points
+% 
+% <<>>=
+% library(spatstat)
+% dran <- runifpoint(100, win = as.vector(t(bbox(ds))))
+% #create 100 random points
+% plot(ds)
+% plot(dran, add = T)
+% @
+% 
+% Nearest neibhour
+
+\end{document}

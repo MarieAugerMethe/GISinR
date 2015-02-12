@@ -14,3 +14,7 @@ Tutorial*.tex
 Tutorials/Tutorial1/figure/*
 Tutorials/Tutorial2/figure/*
 Tutorials/Tutorial3/figure/*
+Tutorials/Tutorial4/figure/*
+Tutorials/Tutorial4/TempLayers/*
+Tutorials/Tutorial4/NatEarthOLayers/*
+
