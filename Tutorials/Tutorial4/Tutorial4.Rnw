@@ -224,12 +224,12 @@ So let's project our data. Let's use the Universal Tranverse Mercator zone 10 wh
 
 <<utmzone10>>=
 boundsUTM <- spTransform(bounds, CRS("+proj=utm +zone=10 +datum=WGS84"))
-recUTM <- spTransform(recLoc, CRS("+proj=utm +zone=10 +datum=WGS84"))
+decUTM <- spTransform(decPerRec, CRS("+proj=utm +zone=10 +datum=WGS84"))
 riversUTM <- spTransform(rivAll, CRS("+proj=utm +zone=10 +datum=WGS84"))
 # Lets' look at it
 plot(boundsUTM)
 plot(riversUTM, add=TRUE, col="blue")
-plot(recUTM, pch=19, cex=0.5, col="red", add=TRUE)
+plot(decUTM, pch=19, cex=0.5, col="red", add=TRUE)
 @
 
 Now we should be able to get the area with \texttt{gArea}.
@@ -255,19 +255,52 @@ One thing that is often useful is to be able to put a buffer around a feature of
 #First let's put a buffer around the rivers of 10 km
 riv10k <- gBuffer(riversUTM, width=10000)
 # Similarly, let's put a buffer of 25 km arroudn the receivers, but here we wuld like to keep each points indepdent and keep the data and so we use byid=TRUE
-rec25k <- gBuffer(recUTM, width=25000, byid=TRUE)
+dec25k <- gBuffer(decUTM, width=25000, byid=TRUE)
 # We now have a SpatialPolygons
 class(riv10k)
-class(rec25k)
-summary(rec25k)
+class(dec25k)
+summary(dec25k)
 plot(boundsUTM)
 plot(riversUTM, col="blue", add=TRUE)
 plot(riv10k, col=rgb(0,0,0.7,0.5), border=NA, add=TRUE)
-plot(recUTM, col="red", add=TRUE, pch=19, cex=0.5)
-plot(rec25k, col=rgb(1,0,0,0.5), border=NA, add=TRUE)
+plot(decUTM, col="red", add=TRUE, pch=19, cex=0.5)
+plot(dec25k, col=rgb(1,0,0,0.5), border=NA, add=TRUE)
 @
 
-Now we would like to see how much water edge, represented by the 10k buffer, is in the vacinity (25k buffer) of each receiver. To do this
+Now we would like to see how much water edge, represented by the 10k buffer, is in the vacinity (25k buffer) of each receiver. This is a completely artificial example and the buffer are really big just so we can visualise them easily.
+
+<<gOverlaps>>=
+rivInRec <- gIntersection(riv10k, dec25k, byid=TRUE)
+length(rivInRec)
+length(dec25k)
+row.names(rivInRec)
+plot(dec25k, col="red", border=NA)
+plot(rivInRec, add=TRUE)
+plot(riv10k, col=rgb(0,0,0.7,0.5), border=NA, add=TRUE)
+plot(boundsUTM, add=TRUE)
+box()
+# So now we want to associate the the rivInRec data to the good rec row
+# The name of the rivInRec data is associated to that or dec25k
+row.names(rivInRec)
+row.names(dec25k)
+# Now we want to use strsplit to divided the name of rivRec and get the name of rec25
+divName <- strsplit(row.names(rivInRec), " ")
+# It gives a list wth each element having 2 element
+head(divName)
+length(divName[[1]])
+# We only want the second element and will get this with sapply
+divName <- sapply(divName, "[", 2)
+# Now we can create a new column in dec25k that will contain the amount of river edge we have in the buffer of the receiver and put 0. FOr this we first need to make the
+dec25k$H2O <- 0
+# We can then add for the value to the associated row
+dec25k$H2O[match(divName,row.names(dec25k))] <- gArea(rivInRec, byid=TRUE)
+# Looks qualitatively ok
+spplot(dec25k, zcol="H2O",
+       sp.layout=list(list("sp.polygons",rivInRec,col="blue"),
+                      list("sp.polygons", riv10k, fill=rgb(0,0,1,0.5), col=NA),
+                      list("sp.polygons", boundsUTM)))
+@
+
 
 % 
 % 
