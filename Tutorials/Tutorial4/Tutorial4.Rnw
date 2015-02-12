@@ -59,10 +59,10 @@ identical(proj4string(kntm), proj4string(bounds))
 # Ok we are good, they are all the same
 
 # What's in those files
-summary(kntm)
-summary(mainRiv)
-summary(smallRiv)
-summary(bounds)
+names(kntm)
+names(mainRiv)
+names(smallRiv)
+names(bounds)
 
 # Let's take a quick look
 library(RColorBrewer) # For color palette (brewer.pal)
@@ -153,10 +153,11 @@ usaKntm2 <- kntm[usaB,]
 plot(bounds)
 plot(usaB, add=TRUE, border="purple", lwd=2)
 plot(usaKntm2, add=TRUE, col="red", pch=19, cex=0.5)
-# unlik ethe usaKntm object made above this will have data
+# unlike the usaKntm object made above this will have data
 class(usaKntm)
 class(usaKntm2)
-summary(usaKntm2)
+# The same columns as in the kntm we are subsetting from
+identical(names(usaKntm2), names(kntm))
 
 # While gIntersection works for polygons and lines it will not clip the lines and polygon to the border, what it does is take all lines that goes inside the usaB but keeps that parts that are outside. Here I'm using the mainRiv to give you a good examples.
 usaRiv2 <- mainRiv[usaB,]
@@ -164,10 +165,8 @@ plot(mainRiv, add=TRUE, col="lightblue")
 plot(usaRiv2, add=TRUE, col="blue")
 # But it keeps the data
 class(usaRiv2)
-summary(usaRiv2)
+identical(names(usaRiv2), names(mainRiv))
 @
-
-MAYBE ADD HOW TO LINK TO DATA. BUT NEED TO MAKE A UNION THAT KEEPS THE DATA
 
 A case that might often happen is that you want to summarise the data based from one layer based whether they fall in another layer. For example, here one might be interested in understand how many species of salmon have been captured in each of the regions of our study area. To do this you can use the function \texttt{aggrate}.
 
@@ -175,7 +174,6 @@ A case that might often happen is that you want to summarise the data based from
 # Get the number of species in each regions
 nSp <- function(x){length(unique(x))}
 regionsSp <- aggregate(kntm[c("scntfcn")], by=bounds, FUN=nSp)
-class(regionsSp)
 summary(regionsSp)
 # Note that we get NA instead of 0
 # We can replace thse values using is.na function
@@ -204,7 +202,6 @@ plot(recLoc, add=TRUE, pch=19, col="red", cex=0.5)
 # Now we can use this recLoc to get at how many detectionwe got per receiver
 nDe <- function(x){length(x)}
 decPerRec <- aggregate(kntm[c("scntfcn")], by=recLoc, FUN=nDe)
-class(decPerRec)
 summary(decPerRec)
 names(decPerRec)
 bubble(decPerRec, zcol="scntfcn", col="red",
@@ -256,9 +253,8 @@ One thing that is often useful is to be able to put a buffer around a feature of
 riv10k <- gBuffer(riversUTM, width=10000)
 # Similarly, let's put a buffer of 25 km arroudn the receivers, but here we wuld like to keep each points indepdent and keep the data and so we use byid=TRUE
 dec25k <- gBuffer(decUTM, width=25000, byid=TRUE)
-# We now have a SpatialPolygons
+# We now have a SpatialPolygons and SpatialPolygonsDataFrame for dec25k
 class(riv10k)
-class(dec25k)
 summary(dec25k)
 plot(boundsUTM)
 plot(riversUTM, col="blue", add=TRUE)
@@ -271,9 +267,10 @@ Now we would like to see how much water edge, represented by the 10k buffer, is 
 
 <<gOverlaps>>=
 rivInRec <- gIntersection(riv10k, dec25k, byid=TRUE)
+# Now we will have new polygons for each intersection, but that means that if some dec25 did not intersect with the river buffer we will have fewer number of polygons
 length(rivInRec)
 length(dec25k)
-row.names(rivInRec)
+#This is the case
 plot(dec25k, col="red", border=NA)
 plot(rivInRec, add=TRUE)
 plot(riv10k, col=rgb(0,0,0.7,0.5), border=NA, add=TRUE)
@@ -281,18 +278,19 @@ plot(boundsUTM, add=TRUE)
 box()
 # So now we want to associate the the rivInRec data to the good rec row
 # The name of the rivInRec data is associated to that or dec25k
-row.names(rivInRec)
-row.names(dec25k)
+head(row.names(rivInRec))
+head(row.names(dec25k))
 # Now we want to use strsplit to divided the name of rivRec and get the name of rec25
 divName <- strsplit(row.names(rivInRec), " ")
 # It gives a list wth each element having 2 element
-head(divName)
+head(divName,3)
 length(divName[[1]])
 # We only want the second element and will get this with sapply
 divName <- sapply(divName, "[", 2)
-# Now we can create a new column in dec25k that will contain the amount of river edge we have in the buffer of the receiver and put 0. FOr this we first need to make the
+head(divName)
+# Now we can create a new column in dec25k that will contain the amount of river edge we have in the buffer of the receiver and put 0.
 dec25k$H2O <- 0
-# We can then add for the value to the associated row
+# We can calculate the arae using garea of the intersetc and add for the value to the associated row
 dec25k$H2O[match(divName,row.names(dec25k))] <- gArea(rivInRec, byid=TRUE)
 # Looks qualitatively ok
 spplot(dec25k, zcol="H2O",
