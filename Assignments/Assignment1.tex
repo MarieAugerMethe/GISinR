@@ -4,29 +4,29 @@
 \usepackage{exercise}
 
 \title{Assignment 1}
-\author{Marie Auger-M\'eth\'e}
+\author{Instructor: Marie Auger-M\'eth\'e}
 \date{}							% Activate to display a given date or no date
 
 \begin{document}
 \maketitle
 
-Please send me before next class (Feb 5) an e-mail with all the answers for this assignment. All \texttt{R} code should be in one script. Please indicate which lines are associated with each exercise by including comments in your code.
+Please send me before next class an e-mail with all the answers for this assignment. All \texttt{R} code should be in one script. Please indicate which lines are associated with each exercise and subquestion by including comments in your code (e.g., \texttt{\# Exercise 1.1}). In addition to the \texttt{R} code, send me a copy of the figure in your e-mail. You can save the figure in .pdf or .jpeg format. 
 
-\begin{Exercise}One of the advantages of R, is that it has a vibrant user community, with many messages boards and other venues to ask for help and discuss problems. For example, the R-sig-Geo list is a specialise mailing list for R functions that handles spatial data (\url{https://stat.ethz.ch/mailman/listinfo/r-sig-geo}). My favourite way to ask for help with R issues is through Stack Overflow (\url{http://stackoverflow.com/}). I want you to create yourself a Stack Overflow account (\url{https://stackoverflow.com/users/signup}).Send me by e-mail your stackoverflow username.
+\begin{Exercise}
+One of the advantages of using \texttt{R}, is that it has a vibrant user community, with many message boards and other online venues to ask for help and discuss problems. For example, the R-sig-Geo list is a specialise mailing list for \texttt{R} functions that handles spatial data (\url{https://stat.ethz.ch/mailman/listinfo/r-sig-geo}). 
+\Question My favourite way to ask for help with \texttt{R} coding problems is through Stack Overflow (\url{http://stackoverflow.com/}). I want you to create yourself a Stack Overflow account (\url{https://stackoverflow.com/users/signup}). Send me by e-mail your stackoverflow username, user number and link to profile (e.g., the link to my profile is: \url{http://stackoverflow.com/users/2870670/marie-auger-methe}). 
+
+\Question Once signed in on Stack Overflow, read the tour page (\url{http://stackoverflow.com/tour}). You need to be signed in for me to know whether you have read the tour page, so make sure you have signed in before reading it. 
 \end{Exercise}
 
 \begin{Exercise}
-Once signed in with your username on Stack Overflow, read the tour page (\href{http://stackoverflow.com/tour}{stackoverflow.com/tour}). You need to be signed in for me to know whether you have read the tour page, so make sure you have signed in before reading it. 
+Import in \texttt{R} the Deployments.csv file from the Ocean Tracking Network (OTN) Arctic Cumberland Sound Array project data found at \url{http://members.oceantrack.org/data/discovery/ACS.htm}. 
+
+\Question Use this data to create a \texttt{SpatialPointsDataFrame}. Make sure the \texttt{Spatial} object has the appropriate coordinate reference system (CRS) associated with it. \textbf{TIPS:} because the coordinates are in latitudes and longitudes we can assume that the CRS is the World Geodetic System 1984 (WGS84). This is the most common geographic CRS  and the one I generally used by GPS devices.
+
+\Question Change the CRS of the object created to a projected CRS that uses a conic projection of your choice. \textbf{TIPS:} to change the CRS using \texttt{spTransform}, you need the original \texttt{Spatial} object to have a CRS.
+
+\Question Make a figure with two panels that shows the \texttt{SpatialPointsDataFrame} object in its original CRS and in its new projection. Make sure the panels have titles. Overlay on each panel a map showing the nearby landmasses/countries. Use the maps available in the \texttt{maps} package.
 \end{Exercise}
 
-\begin{Exercise}
-Import your own point data into \texttt{R} . If you don't have point data at hand, use the Deployments.csv file from the Ocean Tracking Network (OTN) Arctic Cumberland Sound Array project data found at \url{http://members.oceantrack.org/data/discovery/ACS.htm}. 
-
-\Question Use this data to create a \texttt{SpatialPointsDataFrame}. Make sure the \texttt{Spatial} object has appropriate coordinate reference system (CRS) associated with it. 
-
-\Question Change the CRS of the object created to a projected CRS that uses a conic projection of your choice. 
-
-\Question Make a plot with two panels that show the object in it's original CRS and in it's new projection. Make sure the panels have titles. Overlay on each panel a map showing the nearby landmasses/countries. Use the maps available in the \texttt{maps} package. In addition to the \texttt{R} code, send me a copy of the figure in your e-mail. You can save the figure in .pdf or .jpeg format. 
-\end{Exercise}
-
-\end{document}  
+\end{document} 

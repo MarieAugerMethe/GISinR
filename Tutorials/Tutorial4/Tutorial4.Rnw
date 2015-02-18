@@ -9,6 +9,18 @@
 %\newcommand{\Polygon}{\texttt{Polygon}}
 %\newcommand{\SpatialLines}{\texttt{SpatialLines}}
 
+% Add the rbind example:
+% rbind(smallRiv, mainRiv)
+% # Not working because same row names
+% # Change row names of small river to be the main river + small river + 1 (since index by 0).
+% row.names(smallRiv) <- as.character(max(as.numeric(row.names(mainRiv))) + as.numeric(row.names(smallRiv)) + 1)
+% #Now rbind will work  
+% allRiv2 <- rbind(smallRiv,mainRiv)
+% plot(allRiv2)
+% length(allRiv2)
+% length(smallRiv)
+% length(mainRiv)
+
 % For tilde
 \usepackage{xspace}
 \newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
