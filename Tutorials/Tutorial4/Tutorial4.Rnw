@@ -21,6 +21,8 @@
 % length(smallRiv)
 % length(mainRiv)
 
+% Slight confusion about the goal of the last exercise. I think what throw them off was that you get 0 in the first part. Also confused about the minimum distance. Maybe explain further and add TIPS: read the whole help page not just the first line.
+
 % For tilde
 \usepackage{xspace}
 \newcommand{\mytilde}{\lower.80ex\hbox{\char`\~}\xspace}
@@ -395,13 +397,6 @@ The package \texttt{rgeos} has a multitude of tools for spatial analyses. In thi
 
 \end{Exercise}
 
-% 
-% 
-% Note that I have transform the kintama data for it to be in the same projection as the rivers which is BC Albers (see \url{http://spatialreference.org/ref/epsg/nad83-bc-albers/}).
-% 
-% % Mayb put that part with polygons
-% 
-% 
 % I think that's in contrast to things like gDistance package and spdep which has great circle distance?
 % 
 % <<rgeos>>=
