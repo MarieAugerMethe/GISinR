@@ -10,6 +10,10 @@
 *concordance.tex
 Tutorial*.tex
 
+# LaTex files
+*.out
+*.aux
+
 # Figures created by knitr
 Tutorials/Tutorial1/figure/*
 Tutorials/Tutorial2/figure/*
