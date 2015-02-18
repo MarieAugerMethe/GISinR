@@ -14,11 +14,14 @@
 
 \section{Setting your \texttt{R} interface}
 
-While to do be able to handle spatial data in \texttt{R} you only need to install \texttt{R}, I highly recommend using \texttt{R} Studio.
+For this class you will need both \texttt{R} and \texttt{R} Studio (an interface to \texttt{R}).
 
 \begin{Exercise}
 
-\Question Install \texttt{R}. The file can be downloaded at: \url{http://cran.r-project.org}. \marginpar{/2}\Question Install \texttt{R} Studio. The file can be downloaded at:\url{http://www.rstudio.com/products/rstudio/download}. \marginpar{/2}
+\Question Install \texttt{R}. The file can be downloaded at: \url{http://cran.r-project.org}. \marginpar{/2}
+
+\Question Install \texttt{R} Studio. The file can be downloaded at:
+\url{http://www.rstudio.com/products/rstudio/download}. \marginpar{/2}
 
 \end{Exercise}
 
@@ -28,7 +31,8 @@ You can install \texttt{R} packages through \texttt{R} Studio. Click on the `Pac
 
 You can find more info at: \url{https://www.youtube.com/watch?v=u1r5XTqrCTQ}
 
-\begin{Exercise}[label=easyPackages]\Question Install the following \texttt{R} packages:
+\begin{Exercise}[label=easyPackages]
+\Question Install the following \texttt{R} packages:
 \begin{itemize}
 	\item \texttt{sp} \marginpar{/1}
 	\item \texttt{raster} \marginpar{/1}
@@ -38,31 +42,61 @@ You can find more info at: \url{https://www.youtube.com/watch?v=u1r5XTqrCTQ}
 \end{Exercise}
 
 \begin{Exercise}
-\Question Install two 	`potentially hard' \texttt{R} packages. This should be straightforward for most students. However, for some operating systems (e.g., Mac Mavericks), this can be quite challenging (see below for information on how to handle potential problems). \begin{itemize}
-	\item Install \texttt{rgeos}	\marginpar{/2}	\item Install \texttt{rgdal}	\marginpar{/2}
+
+\Question Install two 	`potentially hard' \texttt{R} packages. This should be straightforward for most students. However, for some operating systems (e.g., Mac Mavericks), this can be quite challenging (see below for information on how to handle potential problems). 
+\begin{itemize}
+	\item Install \texttt{rgeos}	\marginpar{/2}
+	\item Install \texttt{rgdal}	\marginpar{/2}
 \end{itemize}
 \end{Exercise}
 
-\subsection{What to do if you have problems installing \texttt{rgeos} and \texttt{rgdal}}If you can't install \texttt{rgeos} and \texttt{rgdal} easily you'll need to install the package from source. Before doing so, you'll need to install three required libraries.\subsubsection{How to install the geos, gdal, proj.4 libraries}
-If you're lucky, you'll be able to install the packages just like the two packages in exercise \ref{easyPackages}. However, if you are using an unsupported operating system by \texttt{rgeos} and \texttt{rgdal}, you'll need to download the geos library for \texttt{rgeos} and the gdal and proj.4 libraries for \texttt{rgdal}. The three libraries can be found: \url{http://www.kyngchaos.com/software:frameworks}
-You can also download and find info on each library at:
+\subsection{What to do if you have problems installing \texttt{rgeos} and \texttt{rgdal}}
+If you can't install \texttt{rgeos} and \texttt{rgdal} easily you'll need to install the package from source. Before doing so, you'll need to install three required libraries.
+
+\subsubsection{How to install the geos, gdal, proj.4 libraries}
+
+If you're lucky, you'll be able to install the packages just like the two packages in exercise \ref{easyPackages}. However, if you are using an unsupported operating system by \texttt{rgeos} and \texttt{rgdal}, you'll need to download the geos library for \texttt{rgeos} and the gdal and proj.4 libraries for \texttt{rgdal}. The three libraries can be found: \url{http://www.kyngchaos.com/software:frameworks}
+
+You can also download and find info on each library at:
 \begin{itemize}
-	\item \url{http://trac.osgeo.org/geos}	\item \url{http://trac.osgeo.org/gdal}	\item \url{http://www.gdal.org}	\item \url{http://trac.osgeo.org/proj}
+	\item \url{http://trac.osgeo.org/geos}
+	\item \url{http://trac.osgeo.org/gdal}
+	\item \url{http://www.gdal.org}
+	\item \url{http://trac.osgeo.org/proj}
 \end{itemize}
 
-\subsubsection{Options for Mac users.}\textbf{Option 1: Using homebrew.} I sometime use homebrew to install libraries and packages that are hard to handle with Mac. First, you need to install Xcode (free from the app store). Second, you need to install homebrew, see: \url{http://brew.sh}. Third, you need to install gdal, geos, proj.4 using homebrew. See: \url{https://github.com/Homebrew/homebrew}. 
+\subsubsection{Options for Mac users.}
+\textbf{Option 1: Using homebrew.} I sometime use homebrew to install libraries and packages that are hard to handle with Mac. First, you need to install Xcode (free from the app store). Second, you need to install homebrew, see: \url{http://brew.sh}. Third, you need to install gdal, geos, proj.4 using homebrew. See: \url{https://github.com/Homebrew/homebrew}. 
 
-I good starting point (after you got the Xcode app) is: \url{https://www.youtube.com/watch?v=G6r46OhNlqw}. You can also find more info at: \url{http://matthewcarriere.com/2013/08/05/how-to-install-and-use-homebrew}.\textbf{Option 2-3. Using osgeos files or using MacPorts.} You can find info on how to install \texttt{rgeos} and \texttt{rgdal} for Mac OX Mavericks directly from website at: \url{http://tlocoh.r-forge.r-project.org/mac_rgeos_rgdal.html}.Note that MacPorts and homebrew are similar, see: \url{http://stackoverflow.com/a/21375589/2870670}. You might need to uninstall homebrew to install MacPorts and vice versa.\subsection{How to install an R package from source}Once the three libraries are installed, you can install packages from source using the \texttt{R} command line. For example, you can install \texttt{rgeos} by writing in the console: \texttt{install.packages("rgeos", type = "source")}If you are a windows user, you'll first need to install R tools. See: \url{http://cran.r-project.org/doc/manuals/R-admin.html#The-Windows-toolset}
+I good starting point (after you got the Xcode app) is: \url{https://www.youtube.com/watch?v=G6r46OhNlqw}. You can also find more info at: \url{http://matthewcarriere.com/2013/08/05/how-to-install-and-use-homebrew}.
 
-\section{Tutorials and R info for those that have never used R}Please familiarise yourself with R before the module.R online tutorials (where you code R online):
+\textbf{Option 2-3. Using osgeos files or using MacPorts.} You can find info on how to install \texttt{rgeos} and \texttt{rgdal} for Mac OX Mavericks directly from website at: \url{http://tlocoh.r-forge.r-project.org/mac_rgeos_rgdal.html}.
+
+Note that MacPorts and homebrew are similar, see: \url{http://stackoverflow.com/a/21375589/2870670}. You might need to uninstall homebrew to install MacPorts and vice versa.
+
+\subsection{How to install an R package from source}
+Once the three libraries are installed, you can install packages from source using the \texttt{R} command line. For example, you can install \texttt{rgeos} by writing in the console: \texttt{install.packages("rgeos", type = "source")}
+
+If you are a windows user, you'll first need to install R tools. See: \url{http://cran.r-project.org/doc/manuals/R-admin.html#The-Windows-toolset}
+
+\section{Tutorials and R info for those that have never used R}
+Please familiarise yourself with R before the module.
+R online tutorials (where you code R online):
 \begin{itemize}
-	\item \url{http://tryr.codeschool.com}	\item \url{https://www.datacamp.com}\end{itemize}
-	Tutorial that is done from R directly: 
+	\item \url{http://tryr.codeschool.com}
+	\item \url{https://www.datacamp.com}
+\end{itemize}
+	
+Tutorial that is done from R directly: 
 \begin{itemize}
-	\item \url{http://swirlstats.com}\end{itemize}
-	Webpage with R info:
+	\item \url{http://swirlstats.com}
+\end{itemize}
+	
+Webpage with R info:
 \begin{itemize}
-	\item \url{http://www.computerworld.com/article/2497143/business-intelligence-beginner-s-guide-to-r-introduction.html}	\item \url{http://cran.r-project.org/doc/manuals/R-intro.pdf}	\item \url{http://www.statmethods.net/}
+	\item \url{http://www.computerworld.com/article/2497143/business-intelligence-beginner-s-guide-to-r-introduction.html}
+	\item \url{http://cran.r-project.org/doc/manuals/R-intro.pdf}
+	\item \url{http://www.statmethods.net/}
 \end{itemize}
 
 \begin{Exercise}
