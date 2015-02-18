@@ -26,6 +26,8 @@
 
 % Maybe add the gridlines example see below
 
+% Maybe add how to use sp.layout below, even if as a quick example.
+
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
