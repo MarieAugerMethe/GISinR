@@ -1,0 +1,65 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage[top=2in, bottom=1.5in, left=1in, right=1in]{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\usepackage{hyperref}
+\usepackage{exercise}
+
+\title{Final assigment}
+\author{Marie Auger-M\'eth\'e}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+Please send me an e-mail before Feb 27 with all the answers for this assignment. All \texttt{R} code should be in one script. Please indicate which lines are associated with each exercise by including comments in your code. In addition, send me a copy of the figures in your e-mail. You can save the figures in .pdf or .jpeg format.
+
+\begin{Exercise}
+
+In this exercise we will use three layers from the Natural Earth website (\url{http://www.naturalearthdata.com/}): 
+
+1) 10 m Coastline (\url{http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_coastline.zip});
+
+2) 10 m roads of the world (\url{http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_roads.zip}); and
+
+3) 10 m North American supplement for roads (\url{http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_roads_north_america.zip}).
+
+In addition, you will need the data from the Ocean Tracking Network (OTN) Sea-Run Brook Trout, Antigonish Harbour, NS project (\url{http://members.oceantrack.org/data/discovery/ANT.htm}). You can take use the Deployment .csv file at the bottom of the page.
+
+\Question Import all three Natural Earth shapefiles. The resulting \texttt{Spatial} objects will be our three original lines layers: coast, mainRoads, and smallRoads.
+
+\Question Import the OTN deployment csv file. Transform the resulting data frame into a \texttt{SpatialPointsDataFrame} object. The CRS should be WGS84, but make sure the proj4string description is exactly the same as the Natural Earth layers. Use the stn\_long and stn\_lat columns in the csv file for the coordinates.
+
+\end{Exercise}
+
+\begin{Exercise}
+
+As you might have noticed the Natural Earth layers are really big and doing analyses on these will be slow. So we want to clip the layers so they retain only the information relevant to the study Area.
+
+\Question  Create a \texttt{SpatialPolygons} object that represent the study area. Note that I want the study area to be 10\% bigger in each direction than the extent of the OTN trout data points. \textbf{TIPS:} use the coordinates of \texttt{bbox} of the trout data points (like we did in tutorial 3). Instead of using the coordinates directly change the coordinates by 10\% the difference in between the min and max values of the coordinates. For example. to increase the size by 40\% on each side you would do: \texttt{st40 <- diff(t(bbox(trout)))*0.4; studyA <- expand.grid(long = bbox(trout)["stn\_long",] + c(-st40[1], st40[1]), lat = bbox(trout)["stn\_lat", ] + c(-st40[2], st40[2]))}.
+
+\Question Create new layers for each of the Natural Earth Layers that are the size of the study area polygons. Each resulting layer should be of length one, i.e. they only have one \texttt{Lines} object and ID within them. In addition, the resulting layers don't need to have attributes. They don't need to be \texttt{SpatialLinesDataFrame} and can be \texttt{SpatialLines} objects.
+
+\end{Exercise}
+
+\begin{Exercise}
+
+We now want to know whether the trout acoustic stations are in the vicinity of the roads and to do this we will use buffer tools. In this case, we don't want to differentiate between the different road types.
+
+\Question Create one layer with the two road layers. Make sure the resulting layer has only one \texttt{Lines} object with one ID and that lines that are intersecting are combine as one.
+
+\Question Create a new layer that represent a 1 km buffer around the roads. \textbf{TIPS:} You might get a warning. That's because buffer tools are based on accurate estimates of distances and thus require to be in a projected CRS. Transform the layers (coast, roadsAll, and trout) to get new layers in a projected CRS. You can choose an UTM projection.
+
+\Question Create a new layer that represent a 500 m buffer around each trout data point. Make sure that the resulting object has one \texttt{Polygons} object per trout data point, i.e., the resulting object is not of length 1.
+
+\Question Create a new layer that represents the area that is covered by both the road buffer and the trout data points buffers.
+
+\Question Create a new column in the trout data buffer polygons object and fill it with the area of the intersection of each trout buffer with roads. \textbf{TIPS:} Just like in tutorial 4, you will need to split the row names using \texttt{strplit} and make sure that you have 0 for trout buffer polygon that don't intersect with roads.
+
+\end{Exercise}
+
+\begin{Exercise}
+
+Plot the trout buffer with a colour gradient representing the area of roads it intersects. Make sure that the roads layer, the roads buffer layer, and the coast layer are also plotted in the same graph.
+
+\end{Exercise}
+
+\end{document}  
