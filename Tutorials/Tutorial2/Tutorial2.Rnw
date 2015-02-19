@@ -21,6 +21,8 @@
 % Maybe add the join based on the plyr example, see the lovelace tutorial. Could also do this with points
 % Add aggregate example for going from SpatialPoints to spatialLines, see Lovelace tutorial
 
+% Lump tutorial 2 and 3 together (SpatialLines & SpatialPolygons) and maybe also plotting
+
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks

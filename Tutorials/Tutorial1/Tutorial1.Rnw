@@ -19,6 +19,14 @@
 
 % Add RColoBrewer pallete when discuss spplot, in particular, discuss the function display.brewer.all(type="seq") and display.brewer.all(type="div"), remember that you need to state the cuts to match with the color palette, e.g.: spplot(olinda_utm, zcol="dens", col.regions=brewer.pal(7, "YlOrRd"), cuts=6)
 
+% 0. Start with good practice
+% 1. I think the best is to show how to lead shape files in this first tutorial
+% 2. Then discuss layers - import a SpatialPolygon of Canada
+% 3. Then discuss projections
+% 4. Then maybe discuss plotting
+
+% Put the map to SpatialPolygon in the Polygon class
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
 % Hook for tilde

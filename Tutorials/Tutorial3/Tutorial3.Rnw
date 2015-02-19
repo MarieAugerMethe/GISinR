@@ -28,6 +28,8 @@
 
 % Maybe add how to use sp.layout below, even if as a quick example.
 
+% Lump the SpatialPolygons with SpatialLines and do spatialAnalysis in tutorial 3, then use tutorial 4 for raster data
+
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hooks
