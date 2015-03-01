@@ -138,7 +138,7 @@ length(smallRiv)
 length(mainRiv)
 @
 
-So gUnion creates one object with one \texttt{Lines} object. This may not always be optimal. However, in our case we are only interested in identifying areas with river water and \texttt{gUnion} is a perfect tool for this.
+So \texttt{gUnion} creates one object with one \texttt{Lines} object. This may not always be optimal. However, in our case we are only interested in identifying areas with river water and \texttt{gUnion} is a perfect tool for this.
 
 Now let's say we would like to focuss only on the salmons from United States. We would like to create a new layer that discard all inormation from the Canadian salmons. As a first step, we we another union tool \texttt{gUnaryUnion} from \texttt{rgeos} to create a new layer with a polygon that merge all American polygons into one.
 
@@ -356,7 +356,7 @@ In our case we would like to associated each dec25k buffer \texttt{Polygons} obj
 head(row.names(riv10k))
 head(row.names(dec25k))
 head(row.names(rivInRec))
-# You cna see that rivInRec is a combination of the row names of riv10k and dec25k
+# You can see that rivInRec is a combination of the row names of riv10k and dec25k
 
 # Now we want to use strsplit to divide the name of rivRec and get the name of dec25k
 divName <- strsplit(row.names(rivInRec), " ")
