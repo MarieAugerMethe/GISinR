@@ -385,7 +385,7 @@ spplot(dec25k, zcol="H2O",
 
 \begin{Exercise}
 
-The package \texttt{rgeos} has a multitude of tools for spatial analyses. In this tutorial I have only presented a small subsets of the tools tha are available to you. For this exercise, I want you to explore the function \texttt{gDistance}. 
+The package \texttt{rgeos} has a multitude of tools for spatial analyses. In this tutorial I have only presented a small subsets of the tools that are available to you. For this exercise, I want you to explore the function \texttt{gDistance}. 
 
 \Question Get the information on this function by typing \texttt{?gDistance} in your console.
 
